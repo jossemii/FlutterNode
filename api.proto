@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+import "onnx.proto";
+import "ipss.proto";
+
+// Solver
+message Interpretation {
+    repeated int32 variable = 1;
+}
+
+
+// Random
+message Clause {
+    repeated int32 literal = 1;
+}
+
+message Cnf {
+    repeated Clause clause = 1;
+}
+
+message Empty {}
+
+service Random {
+    rpc RandomCnf(Empty) returns (Cnf) {}
+}
+
+message File {
+    string file = 1;
+}
+
+service Solver {
+    rpc StartTrain ( Empty) returns (Empty) {}
+    rpc StopTrain ( Empty) returns (Empty) {}
+    rpc GetTensor ( Empty) returns (stream tensor_onnx.ONNX) {}
+    rpc UploadSolver ( ipss.Service) returns (Empty) {}
+    rpc StreamLogs (Empty) returns (stream File){}
+    rpc Solve(Cnf) returns (Interpretation) {}
+}
