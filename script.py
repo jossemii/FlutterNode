@@ -1,13 +1,13 @@
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc
 from time import sleep
 
-SORTER = "e472e695f0f353fb366730f49136b62f783cf7a7e7ce9c7ac534c76a68248114"
-RANDOM = '59711af0372a8b1785bc7af60037e4e97aa2992bb47600c9a9b1cd2a1e424008'
+SORTER = "7a7d365af4a395f31e4402f0aff803af962c5f4226b592cebaa0fe76a709aab4"
+RANDOM = 'e92d52639d2f582d4c9f148ae776abd14ebad4c261d06672e27f317008641200'
 FRONTIER = 'e740d93e8e9cbedb917c00ccd9887d934f881ab3812867a596019116ebbb31db'
 WALK = '9142c5317ea881d20c5553fbf0403950db5bebfea1e0ea3cd7306febe5b78f98'
 WALL = '436b35c87727d8856cdf77fe176a5dbc715bbd8a78dffccbd057ba4f3c15e060'
 
-GATEWAY = '192.168.1.143'
+GATEWAY = '192.168.1.172'
 
 def generator(hash):
     transport = gateway_pb2.ServiceTransport()
@@ -18,9 +18,6 @@ def generator(hash):
 g_stub = gateway_pb2_grpc.GatewayStub(
     grpc.insecure_channel(GATEWAY+':8080')
     )
-
-
-
 
 # Get a classifier.
 classifier = g_stub.StartService(generator(
@@ -35,6 +32,8 @@ c_stub = api_pb2_grpc.SolverStub(
         )
     )
 
+sleep(10) # Espera a que el servidor se levante.
+
 # Inicia el entrenamiento.
 c_stub.StartTrain(api_pb2.Empty())
 
@@ -45,8 +44,10 @@ for s in [FRONTIER, WALL, WALK]:
     c_stub.UploadSolver(solver)
 
 print('Wait to train the model ...')
-sleep(200)
-
+for i in range(10): 
+    # Realiza regresion 20 veces, el tiempo por defecto entre cada una son 900 segundos
+    print('TEMPO ', i)
+    sleep(900)
 
 
 # While classifier is training get random cnf
@@ -60,6 +61,8 @@ r_stub = api_pb2_grpc.RandomStub(
         uri.ip +':'+ str(uri.port)
         )
     )
+
+sleep(5) # Espera a que el servidor se levante.
 
 cnf = r_stub.RandomCnf(api_pb2.Empty())
 
