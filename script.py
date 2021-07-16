@@ -1,7 +1,7 @@
-import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc
-from time import sleep
+import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading
+from time import sleep, time
 
-SORTER = "16cf922a140802ca86d6a96614883e7e8d52eb9d4334dfe667364629eb576e7e"
+SORTER = "e15dc1dc49db2c01564e20dbaab95f085f03c9259ecc05c0e5a3336f4ef5378c"
 RANDOM = 'e92d52639d2f582d4c9f148ae776abd14ebad4c261d06672e27f317008641200'
 FRONTIER = 'e740d93e8e9cbedb917c00ccd9887d934f881ab3812867a596019116ebbb31db'
 WALK = '9142c5317ea881d20c5553fbf0403950db5bebfea1e0ea3cd7306febe5b78f98'
@@ -73,24 +73,76 @@ for i in range(5):
     # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
     # ha hecho la seleccion del solver.)
     print('\n ---- ', i)
-    print('SOLVING CNF ...')
+    print(' SOLVING CNF ...')
+    t = time()
     interpretation = c_stub.Solve(cnf)
-    print('OKAY THE INTERPRETATION WAS ', interpretation)
+    print(interpretation, str(time()-t)+' OKAY THE INTERPRETATION WAS ')
 
-
+print('Termina el entrenamiento')
 # Termina el entrenamiento.
 c_stub.StopTrain(api_pb2.Empty())
 
-cnf = r_stub.RandomCnf(api_pb2.Empty())
+sleep(100)
+
+# Inicia el entrenamiento.
+c_stub.StartTrain(api_pb2.Empty())
+
+print('Wait to train the model (second) ...')
+for i in range(5): 
+    for j in range(10):
+        print(' time ', i, j)
+        sleep(200)
+    
+    cnf = r_stub.RandomCnf(api_pb2.Empty())
+    # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
+    # ha hecho la seleccion del solver.)
+    print('\n ---- ', i)
+    print(' SOLVING CNF ...')
+    t = time()
+    interpretation = c_stub.Solve(cnf)
+    print(interpretation, str(time()-t)+' OKAY THE INTERPRETATION WAS ')
+
+print('Termina el segundo entrenamiento')
+# Termina el entrenamiento.
+c_stub.StopTrain(api_pb2.Empty())
+
 # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
 # ha hecho la seleccion del solver.)
+def final_test(c_stub, r_stub, i, j):
+    cnf = r_stub.RandomCnf(api_pb2.Empty())
+    t = time()
+    interpretation = c_stub.Solve(cnf)
+    print(interpretation, str(time()-t)+'THE FINAL INTERPRETATION IN THREAD '+threading.get_ident(),' last time ', i, j)
 
-print('SOLVING CNF ...')
-interpretation = c_stub.Solve(cnf)
-print('THE FINAL INTERPRETATION WAS ', interpretation)
+def logs(c_stub):
+    for file in c_stub.StreamLogs(api_pb2.Empty()):
+        print('\n\nNEW FILE.', file.file)
 
+for i in range(20):
+    sleep(10)
+    threads = []
+    for j in range(10 if i%2==0 else 4):
+        t = threading.Thread(target=final_test, args=(c_stub, r_stub, i, j, ))
+        threads.append(t)
+        t.start()
+    for t in threads:
+        t.join()
+
+l = threading.Thread(target=logs, args=(c_stub, ))
+l.start()
+
+print('Obtiene el tensor.')
+counter = 6
+for tensor in c_stub.GetTensor(api_pb2.Empty()):
+    print('\n\nTENSOR -> ', tensor)
+    sleep(10)
+    if counter==0: break
+    else: counter-=1
+
+l.join()
 # Stop the classifier.
 g_stub.StopService(classifier.token)
 
 # Stop Random cnf service.
 g_stub.StopService(random_cnf_service.token)
+print('All good?')
