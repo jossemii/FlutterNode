@@ -1,4 +1,5 @@
-import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading
+import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json
+from six import with_metaclass
 from time import sleep, time
 
 SORTER = "e15dc1dc49db2c01564e20dbaab95f085f03c9259ecc05c0e5a3336f4ef5378c"
@@ -24,35 +25,52 @@ classifier = g_stub.StartService(generator(
     hash=SORTER
 ))
 
-uri=classifier.instance.uri_slot[0].uri[0]
+if open('script_data.json', 'r').read() == '':
+    uri=classifier.instance.uri_slot[0].uri[0]
 
-c_stub = api_pb2_grpc.SolverStub(
-    grpc.insecure_channel(
-        uri.ip +':'+ str(uri.port)
+    c_stub = api_pb2_grpc.SolverStub(
+        grpc.insecure_channel(
+            uri.ip +':'+ str(uri.port)
+            )
         )
-    )
 
-print('Tenemos clasificador. ', c_stub)
+    print('Tenemos clasificador. ', c_stub)
 
-sleep(10) # Espera a que el servidor se levante.
+    sleep(10) # Espera a que el servidor se levante.
 
-# Get random cnf
-random_cnf_service = g_stub.StartService(generator(
-    hash=RANDOM
-))
+    # Get random cnf
+    random_cnf_service = g_stub.StartService(generator(
+        hash=RANDOM
+    ))
 
-uri=random_cnf_service.instance.uri_slot[0].uri[0]
-r_stub = api_pb2_grpc.RandomStub(
-    grpc.insecure_channel(
-        uri.ip +':'+ str(uri.port)
+    uri=random_cnf_service.instance.uri_slot[0].uri[0]
+    r_stub = api_pb2_grpc.RandomStub(
+        grpc.insecure_channel(
+            uri.ip +':'+ str(uri.port)
+            )
         )
-    )
 
-print('Tenemos random. ', r_stub)
+    print('Tenemos random. ', r_stub)
+
+    # save stubs on json.
+    with open('script_data.json', 'w') as data:
+        data.write(json.dumps({
+            'sorter': c_stub.__dict__,
+            'random': r_stub.__dict__
+        }))
+
+else:
+    print('Getting from json file.')
+    with open('script_data.json', 'r') as file:
+        c_stub = json.loads(json.dumps(file.read()['sorter']), object_hook=api_pb2_grpc.SolverStub)
+        r_stub = json.loads(json.dumps(file.read()['random']), object_hook=api_pb2_grpc.RandomStub)
+
 
 print('Iniciando entrenamiento...')
 # Inicia el entrenamiento.
 c_stub.StartTrain(api_pb2.Empty())
+
+
 
 print('Subiendo solvers al clasificador.')
 # Añade solvers.
@@ -83,28 +101,6 @@ print('Termina el entrenamiento')
 c_stub.StopTrain(api_pb2.Empty())
 
 sleep(100)
-
-# Inicia el entrenamiento.
-c_stub.StartTrain(api_pb2.Empty())
-
-print('Wait to train the model (second) ...')
-for i in range(5): 
-    for j in range(10):
-        print(' time ', i, j)
-        sleep(200)
-    
-    cnf = r_stub.RandomCnf(api_pb2.Empty())
-    # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
-    # ha hecho la seleccion del solver.)
-    print('\n ---- ', i)
-    print(' SOLVING CNF ...')
-    t = time()
-    interpretation = c_stub.Solve(cnf)
-    print(interpretation, str(time()-t)+' OKAY THE INTERPRETATION WAS ')
-
-print('Termina el segundo entrenamiento')
-# Termina el entrenamiento.
-c_stub.StopTrain(api_pb2.Empty())
 
 # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
 # ha hecho la seleccion del solver.)
@@ -146,3 +142,6 @@ g_stub.StopService(classifier.token)
 # Stop Random cnf service.
 g_stub.StopService(random_cnf_service.token)
 print('All good?')
+
+with open('script_data.json', 'w') as file:
+    file.write(json.dumps(''))
