@@ -14,7 +14,7 @@ WALL = '9d79082de68b72b8c2fb7bcc3a229374cca11794f1b5d2cb5f47a22b9a1c820b'
 
 WHISKY = '192.168.1.114'
 MOJITO = '192.168.1.143'
-GATEWAY = MOJITO
+GATEWAY = WHISKY
 
 def generator(hash):
     transport = gateway_pb2.ServiceTransport()
