@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\rgateway.proto\x12\x07gateway\x1a\nipss.proto\"\x07\n\x05\x45mpty\"\x1d\n\x0cTokenMessage\x12\r\n\x05token\x18\x01 \x01(\t\";\n\x08Instance\x12 \n\x08instance\x18\x01 \x01(\x0b\x32\x0e.ipss.Instance\x12\r\n\x05token\x18\x02 \x01(\t\"\x82\x01\n\x10ServiceTransport\x12\x0e\n\x04hash\x18\x01 \x01(\tH\x00\x12 \n\x07service\x18\x02 \x01(\x0b\x32\r.ipss.ServiceH\x00\x12(\n\x06\x63onfig\x18\x03 \x01(\x0b\x32\x13.ipss.ConfigurationH\x01\x88\x01\x01\x42\x07\n\x05oneOfB\t\n\x07_config2\x83\x01\n\x07Gateway\x12@\n\x0cStartService\x12\x19.gateway.ServiceTransport\x1a\x11.gateway.Instance\"\x00(\x01\x12\x36\n\x0bStopService\x12\x15.gateway.TokenMessage\x1a\x0e.gateway.Empty\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\rgateway.proto\x12\x07gateway\x1a\nipss.proto\"\x07\n\x05\x45mpty\"\x1d\n\x0cTokenMessage\x12\r\n\x05token\x18\x01 \x01(\t\";\n\x08Instance\x12 \n\x08instance\x18\x01 \x01(\x0b\x32\x0e.ipss.Instance\x12\r\n\x05token\x18\x02 \x01(\t\"\x96\x01\n\x10ServiceTransport\x12\"\n\x04hash\x18\x01 \x01(\x0b\x32\x12.ipss.HashTag.HashH\x00\x12 \n\x07service\x18\x02 \x01(\x0b\x32\r.ipss.ServiceH\x00\x12(\n\x06\x63onfig\x18\x03 \x01(\x0b\x32\x13.ipss.ConfigurationH\x01\x88\x01\x01\x42\x07\n\x05oneOfB\t\n\x07_config2\x83\x01\n\x07Gateway\x12@\n\x0cStartService\x12\x19.gateway.ServiceTransport\x1a\x11.gateway.Instance\"\x00(\x01\x12\x36\n\x0bStopService\x12\x15.gateway.TokenMessage\x1a\x0e.gateway.Empty\"\x00\x62\x06proto3'
   ,
   dependencies=[ipss__pb2.DESCRIPTOR,])
 
@@ -133,8 +133,8 @@ _SERVICETRANSPORT = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='hash', full_name='gateway.ServiceTransport.hash', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -175,10 +175,11 @@ _SERVICETRANSPORT = _descriptor.Descriptor(
     fields=[]),
   ],
   serialized_start=140,
-  serialized_end=270,
+  serialized_end=290,
 )
 
 _INSTANCE.fields_by_name['instance'].message_type = ipss__pb2._INSTANCE
+_SERVICETRANSPORT.fields_by_name['hash'].message_type = ipss__pb2._HASHTAG_HASH
 _SERVICETRANSPORT.fields_by_name['service'].message_type = ipss__pb2._SERVICE
 _SERVICETRANSPORT.fields_by_name['config'].message_type = ipss__pb2._CONFIGURATION
 _SERVICETRANSPORT.oneofs_by_name['oneOf'].fields.append(
@@ -233,8 +234,8 @@ _GATEWAY = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=273,
-  serialized_end=404,
+  serialized_start=293,
+  serialized_end=424,
   methods=[
   _descriptor.MethodDescriptor(
     name='StartService',

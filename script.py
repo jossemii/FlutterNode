@@ -1,26 +1,33 @@
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, sys
 from time import sleep, time
 
+
+SORTER = ""
+RANDOM = '2d90e2f2809eb085f3983cc81fb345047ed31d1ae4e2af9fadf3cc7a1a2f8ad7'
+FRONTIER = 'ff5cd81386be3a547d9cba7799010f662e43a57c3cb78f074ee5b8d01100e08e'
+WALK = '228fbdf8d636032535dbd81dd5a653b4e3a40c4bb43ea1f37d18b83f053d2833'
+WALL = '28fc5ea20bbd9d1d7c5ba40614bab7c21202edf3911a3afe12cb054c42820bac'
+
+SHA3_256 = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a'
+
+WHISKY = '192.168.1.114'
+MOJITO = '192.168.1.144'
+GATEWAY = MOJITO
+
+def generator(hash: str):
+    transport = gateway_pb2.ServiceTransport()
+    transport.hash.type = bytes.fromhex(SHA3_256)
+    transport.hash.value = bytes.fromhex(hash)
+    transport.config.CopyFrom(gateway_pb2.ipss__pb2.Configuration())
+    yield transport
+
+
+# Start the script.
+
 if input('Clean json data? (y/n)') == 'y':
     print('\nClearing data ...')
     with open('script_data.json', 'w') as file:
         json.dump("", file)
-
-SORTER = "6565343d16cc49f998f0313d787a43a1ec42324fb3f2103f661672a2745f0ed1"
-RANDOM = '09fb4947e59b569eb3dd5726a4e52d7244dc562852559b2efda2a5234f6ff446'
-FRONTIER = 'e0613ac5773a46f22d119b0c4fc1f6047f3f90c4cd677edee89bcab76960b208'
-WALK = 'ddd36870083b58df28db54391552143e231f1b5d93937efd3cb1dae179dacae6'
-WALL = '9d79082de68b72b8c2fb7bcc3a229374cca11794f1b5d2cb5f47a22b9a1c820b'
-
-WHISKY = '192.168.1.114'
-MOJITO = '192.168.1.143'
-GATEWAY = WHISKY
-
-def generator(hash):
-    transport = gateway_pb2.ServiceTransport()
-    transport.hash = 'sha3-256:'+hash
-    transport.config.CopyFrom(gateway_pb2.ipss__pb2.Configuration())
-    yield transport
 
 g_stub = gateway_pb2_grpc.GatewayStub(
     grpc.insecure_channel(GATEWAY+':8080')
@@ -122,10 +129,6 @@ def final_test(c_stub, r_stub, i, j):
     interpretation = c_stub.Solve(cnf)
     print(interpretation, str(time()-t)+'THE FINAL INTERPRETATION IN THREAD '+str(threading.get_ident()),' last time ', i, j)
 
-def logs(c_stub):
-    for file in c_stub.StreamLogs(api_pb2.Empty()):
-        print('\n\nNEW FILE.', file.file)
-
 for i in range(3):
     sleep(10)
     threads = []
@@ -136,9 +139,6 @@ for i in range(3):
     for t in threads:
         t.join()
 
-l = threading.Thread(target=logs, args=(c_stub, ))
-l.start()
-
 print('Obtiene el tensor.')
 counter = 6
 for tensor in c_stub.GetTensor(api_pb2.Empty()):
@@ -146,8 +146,6 @@ for tensor in c_stub.GetTensor(api_pb2.Empty()):
     sleep(10)
     if counter==0: break
     else: counter-=1
-
-l.join()
 
 print('waiting for kill solvers ...')
 sleep(200)
