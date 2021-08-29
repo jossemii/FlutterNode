@@ -9,7 +9,7 @@ WALL = '28fc5ea20bbd9d1d7c5ba40614bab7c21202edf3911a3afe12cb054c42820bac'
 SHA3_256 = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a'
 
 WHISKY = '192.168.1.114'
-MOJITO = '192.168.1.144'
+MOJITO = '192.168.1.143'
 GATEWAY = MOJITO
 
 def generator(hash: str):
@@ -64,10 +64,10 @@ if input("\nGo to train? (y/n)")=='y':
 
 
     print('Wait to train the model ...')
-    for i in range(5): 
+    for i in range(1): 
         for j in range(10):
             print(' time ', i, j)
-            sleep(200)
+            sleep(60)
         
         cnf = r_stub.RandomCnf(api_pb2.Empty())
         # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
@@ -78,7 +78,7 @@ if input("\nGo to train? (y/n)")=='y':
         interpretation = c_stub.Solve(cnf)
         print(interpretation, str(time()-t)+' OKAY THE INTERPRETATION WAS ')
 
-    sleep(100)
+    sleep(60)
 
 print('Termina el entrenamiento')
 # En caso de que estubiera entrenando lo finaliza.
@@ -93,10 +93,10 @@ def final_test(c_stub, r_stub, i, j):
     print(interpretation, str(time()-t)+'THE FINAL INTERPRETATION IN THREAD '+str(threading.get_ident()),' last time ', i, j)
 
 
-for i in range(3):
+for i in range(1):
     sleep(10)
     threads = []
-    for j in range(10 if i%2==0 else 4):
+    for j in range(4):
         t = threading.Thread(target=final_test, args=(c_stub, r_stub, i, j, ))
         threads.append(t)
         t.start()
@@ -104,9 +104,9 @@ for i in range(3):
         t.join()
 
 print('Obtiene el data_set.')
-for dataset in c_stub.GetDataSet(api_pb2.Empty()):
-    print('\n\DATASET -> ', dataset)
-    open('dataset.bin', 'wb').write(dataset.SerializeToString())
+dataset = c_stub.GetDataSet(api_pb2.Empty())
+print('\n\DATASET -> ', dataset)
+open('dataset.bin', 'wb').write(dataset.SerializeToString())
 
 
 print('waiting for kill solvers ...')
