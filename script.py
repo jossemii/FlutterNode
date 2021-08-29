@@ -2,7 +2,7 @@ import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, js
 from time import sleep, time
 
 
-SORTER = ""
+SORTER = "310cbc89d41c31351c482f3ec46e7f7e6f0157a5ffd2a442dea3d1ecf39bc3fd"
 RANDOM = '2d90e2f2809eb085f3983cc81fb345047ed31d1ae4e2af9fadf3cc7a1a2f8ad7'
 FRONTIER = 'ff5cd81386be3a547d9cba7799010f662e43a57c3cb78f074ee5b8d01100e08e'
 WALK = '228fbdf8d636032535dbd81dd5a653b4e3a40c4bb43ea1f37d18b83f053d2833'

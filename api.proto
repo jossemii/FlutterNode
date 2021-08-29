@@ -2,8 +2,9 @@ syntax = "proto3";
 
 import "onnx.proto";
 import "ipss.proto";
+import "solvers_dataset.proto";
 
-
+// Solver
 message Interpretation {
     repeated int32 variable = 1;
     optional bool satisfiable = 2; // Para decir que es insatisfactible se puede pasar únicamente
@@ -13,6 +14,8 @@ message Interpretation {
         // el mensaje sería inválido.
 }
 
+
+// Random
 message Clause {
     repeated int32 literal = 1;
 }
@@ -38,4 +41,9 @@ service Solver {
     rpc UploadSolver ( ipss.Service) returns (Empty) {}
     rpc StreamLogs (Empty) returns (stream File){}
     rpc Solve(Cnf) returns (Interpretation) {}
+    rpc AddTensor( tensor_onnx.ONNX) returns (Empty) {}
+
+    // Hasta que se implemente AddTensor.
+    rpc GetDataSet( Empty) returns (dataset.DataSet) {}
+    rpc AddDataSet( dataset.DataSet) returns (Empty) {}
 }

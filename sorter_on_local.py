@@ -92,9 +92,6 @@ def final_test(c_stub, r_stub, i, j):
     interpretation = c_stub.Solve(cnf)
     print(interpretation, str(time()-t)+'THE FINAL INTERPRETATION IN THREAD '+str(threading.get_ident()),' last time ', i, j)
 
-def logs(c_stub):
-    for file in c_stub.StreamLogs(api_pb2.Empty()):
-        print('\n\nNEW FILE.', file.file)
 
 for i in range(3):
     sleep(10)
@@ -106,24 +103,14 @@ for i in range(3):
     for t in threads:
         t.join()
 
-l = threading.Thread(target=logs, args=(c_stub, ))
-l.start()
+print('Obtiene el data_set.')
+for dataset in c_stub.GetDataSet(api_pb2.Empty()):
+    print('\n\DATASET -> ', dataset)
+    open('dataset.bin', 'wb').write(dataset.SerializeToString())
 
-print('Obtiene el tensor.')
-counter = 6
-for tensor in c_stub.GetTensor(api_pb2.Empty()):
-    print('\n\nTENSOR -> ', tensor)
-    sleep(10)
-    if counter==0: break
-    else: counter-=1
-
-l.join()
 
 print('waiting for kill solvers ...')
 sleep(200)
-
-# Stop the classifier.
-g_stub.StopService(classifier.token)
 
 # Stop Random cnf service.
 g_stub.StopService(random_cnf_service.token)
