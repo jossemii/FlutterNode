@@ -151,10 +151,10 @@ print('waiting for kill solvers ...')
 sleep(200)
 
 # Stop the classifier.
-g_stub.StopService(classifier.token)
+g_stub.StopService(gateway_pb2.TokenMessage(token=classifier.token))
 
 # Stop Random cnf service.
-g_stub.StopService(random_cnf_service.token)
+g_stub.StopService(gateway_pb2.TokenMessage(token=random_cnf_service.token))
 print('All good?')
 
 with open('script_data.json', 'w') as file:

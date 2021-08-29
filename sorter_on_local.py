@@ -1,4 +1,4 @@
-import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, sys
+import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2
 from time import sleep, time
 
 RANDOM = '2d90e2f2809eb085f3983cc81fb345047ed31d1ae4e2af9fadf3cc7a1a2f8ad7'
@@ -48,6 +48,15 @@ r_stub = api_pb2_grpc.RandomStub(
 print('Tenemos random. ', r_stub)
 
 sleep(10) # Espera a que el servidor se levante.
+
+try:
+    dataset = solvers_dataset_pb2.DataSet()
+    dataset.ParseFromString(open('dataset.bin', 'rb').read())
+    c_stub.AddDataSet(dataset)
+    print('Dataset añadido.')
+except Exception as e:
+    print(e)
+    pass
 
 if input("\nGo to train? (y/n)")=='y':
     print('Iniciando entrenamiento...')
@@ -110,10 +119,10 @@ open('dataset.bin', 'wb').write(dataset.SerializeToString())
 
 
 print('waiting for kill solvers ...')
-sleep(200)
+sleep(700)
 
 # Stop Random cnf service.
-g_stub.StopService(random_cnf_service.token)
+g_stub.StopService(gateway_pb2.TokenMessage(token=random_cnf_service.token))
 print('All good?')
 
 with open('script_data.json', 'w') as file:
