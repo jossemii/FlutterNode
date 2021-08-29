@@ -1,4 +1,4 @@
-import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, sys
+import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2
 from time import sleep, time
 
 
@@ -86,6 +86,15 @@ else:
 
 sleep(10) # Espera a que el servidor se levante.
 
+try:
+    dataset = solvers_dataset_pb2.DataSet()
+    dataset.ParseFromString(open('dataset.bin', 'rb').read())
+    c_stub.AddDataSet(dataset)
+    print('Dataset añadido.')
+except Exception as e:
+    print(e)
+    pass
+
 if input("\nGo to train? (y/n)")=='y':
     print('Iniciando entrenamiento...')
     # Inicia el entrenamiento.
@@ -139,6 +148,7 @@ for i in range(3):
     for t in threads:
         t.join()
 
+"""
 print('Obtiene el tensor.')
 counter = 6
 for tensor in c_stub.GetTensor(api_pb2.Empty()):
@@ -146,11 +156,22 @@ for tensor in c_stub.GetTensor(api_pb2.Empty()):
     sleep(10)
     if counter==0: break
     else: counter-=1
+"""
+
+print('Obtiene el data_set.')
+dataset = c_stub.GetDataSet(api_pb2.Empty())
+print('\n\DATASET -> ', dataset)
+open('dataset.bin', 'wb').write(dataset.SerializeToString())
+
 
 print('waiting for kill solvers ...')
-sleep(200)
+for i in range(10):
+    for j in range(10):
+        sleep(10)
+        print(i, j)
 
 # Stop the classifier.
+print('Stop the clasifier.')
 g_stub.StopService(gateway_pb2.TokenMessage(token=classifier.token))
 
 # Stop Random cnf service.
