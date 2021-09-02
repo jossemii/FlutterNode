@@ -1,10 +1,10 @@
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2
 from time import sleep, time
 
-RANDOM = '2d90e2f2809eb085f3983cc81fb345047ed31d1ae4e2af9fadf3cc7a1a2f8ad7'
-FRONTIER = 'ff5cd81386be3a547d9cba7799010f662e43a57c3cb78f074ee5b8d01100e08e'
-WALK = '228fbdf8d636032535dbd81dd5a653b4e3a40c4bb43ea1f37d18b83f053d2833'
-WALL = '28fc5ea20bbd9d1d7c5ba40614bab7c21202edf3911a3afe12cb054c42820bac'
+RANDOM = '4bae4b952f0b9fa4f658585965692caa1f530fb1dee2f01f94b451f4abae9c96'
+FRONTIER = '038e4eb5ecf1166368ab1d4ee51168f689721ed4a39bbc90efa6eb4995b26953'
+WALL = '7d05071d88751a6f378fe32bee204380cb3c95574c0cc47368efc00f81a81971'
+WALK = '8012f59dd6ea6471ac9b8d18c6b7594237d1e03206e3e66693c2168793a5f6f2'
 
 SHA3_256 = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a'
 
@@ -34,9 +34,11 @@ c_stub = api_pb2_grpc.SolverStub(
 print('Tenemos clasificador. ', c_stub)
 
 # Get random cnf
-random_cnf_service = g_stub.StartService(generator(
-    hash=RANDOM
-))
+random_cnf_service = g_stub.StartService(
+    generator(
+        hash = RANDOM
+    )
+)
 
 print(random_cnf_service)
 uri=random_cnf_service.instance.uri_slot[0].uri[0]
@@ -55,7 +57,7 @@ try:
     c_stub.AddDataSet(dataset)
     print('Dataset añadido.')
 except Exception as e:
-    print(e)
+    print('No tenemos dataset.')
     pass
 
 if input("\nGo to train? (y/n)")=='y':
@@ -73,10 +75,10 @@ if input("\nGo to train? (y/n)")=='y':
 
 
     print('Wait to train the model ...')
-    for i in range(1): 
+    for i in range(50): 
         for j in range(10):
             print(' time ', i, j)
-            sleep(60)
+            sleep(200)
         
         cnf = r_stub.RandomCnf(api_pb2.Empty())
         # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
