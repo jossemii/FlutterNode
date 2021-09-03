@@ -13,7 +13,7 @@ SHA3_256 = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a'
 WHISKY = '192.168.1.114'
 MOJITO = '192.168.1.143'
 TEQUILA = '192.168.1.63'
-GATEWAY = TEQUILA
+GATEWAY = MOJITO
 
 def generator(hash: str):
     transport = gateway_pb2.ServiceTransport()
