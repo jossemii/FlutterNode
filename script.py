@@ -126,6 +126,8 @@ if input("\nGo to train? (y/n)")=='y':
         t = time()
         interpretation = c_stub.Solve(cnf)
         print(interpretation, str(time()-t)+' OKAY THE INTERPRETATION WAS ')
+        print('Obtiene el data_set.')
+        open('dataset.bin', 'wb').write(c_stub.GetDataSet(api_pb2.Empty()).SerializeToString())
 
     sleep(100)
 
