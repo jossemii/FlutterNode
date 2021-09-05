@@ -7,12 +7,12 @@ RANDOM = '4bae4b952f0b9fa4f658585965692caa1f530fb1dee2f01f94b451f4abae9c96'
 FRONTIER = '038e4eb5ecf1166368ab1d4ee51168f689721ed4a39bbc90efa6eb4995b26953'
 WALL = '7d05071d88751a6f378fe32bee204380cb3c95574c0cc47368efc00f81a81971'
 WALK = '8012f59dd6ea6471ac9b8d18c6b7594237d1e03206e3e66693c2168793a5f6f2'
-LISIADO_UNDER = '6dfea768959a77629f74e2260a8098dc6f7331606f4b5fcba079a6e24496d3c0'
-LISIADO_OVER = '6bc531dc227748f695767933285195e748c488eb5cedd966c5725e803fd63c64'
+LISIADO_UNDER = '4c7b30d0960171cce80faa2752f2470c704bf72840a405c7f950be5b2e870903'
+LISIADO_OVER = 'bb64cd53a47ebe6f84cd086254eb66ccfdfaa983d0435c32e48703dcfc819b67'
 
 SHA3_256 = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a'
 
-WHISKY = '192.168.1.114'
+WHISKY = '192.168.1.53'
 MOJITO = '192.168.1.143'
 TEQUILA = '192.168.1.63'
 GATEWAY = MOJITO
@@ -40,39 +40,48 @@ print(json.load(open('script_data.json', 'r')))
 if type(json.load(open('script_data.json', 'r'))) != dict:
 
     print('Get new services....')
+
     # Get a classifier.
     classifier = g_stub.StartService(generator(
         hash=SORTER
     ))
     print(classifier)
-
     uri=classifier.instance.uri_slot[0].uri[0]
     c_uri = uri.ip +':'+ str(uri.port)
     c_stub = api_pb2_grpc.SolverStub(
         grpc.insecure_channel(c_uri)
         )
-
     print('Tenemos clasificador. ', c_stub)
 
     # Get random cnf
     random_cnf_service = g_stub.StartService(generator(
         hash=RANDOM
     ))
-
     print(random_cnf_service)
     uri=random_cnf_service.instance.uri_slot[0].uri[0]
     r_uri = uri.ip +':'+ str(uri.port)
     r_stub = api_pb2_grpc.RandomStub(
         grpc.insecure_channel(r_uri)
         )
-
     print('Tenemos random. ', r_stub)
+
+    # Get the frontier for test it.
+    uri=g_stub.StartService(generator(
+        hash=FRONTIER
+    )).instance.uri_slot[0].uri[0]
+    frontier_uri = uri.ip +':'+ str(uri.port)
+    frontier_stub = api_pb2_grpc.SolverStub(
+        grpc.insecure_channel(frontier_uri)
+        )
+
+    print('Tenemos frontier ', frontier_stub)
 
     # save stubs on json.
     with open('script_data.json', 'w') as file:
         json.dump({
             'sorter': c_uri,
-            'random': r_uri
+            'random': r_uri,
+            'frontier': frontier_uri,
         }, file)
 
 else:
@@ -85,6 +94,9 @@ else:
         )
         r_stub = api_pb2_grpc.RandomStub(
             grpc.insecure_channel(data['random'])
+        )
+        frontier_stub = api_pb2_grpc.SolverStub(
+            grpc.insecure_channel(data['frontier'])
         )
 
 sleep(10) # Espera a que el servidor se levante.
@@ -105,7 +117,7 @@ if input("\nGo to train? (y/n)")=='y':
 
     print('Subiendo solvers al clasificador.')
     # Añade solvers.
-    for s in  [LISIADO_UNDER, LISIADO_OVER]: #[FRONTIER, WALL, WALK]:
+    for s in  [LISIADO_UNDER, LISIADO_OVER ]:#, FRONTIER, WALL, WALK]:
         print('     ', s)
         solver = api_pb2.ipss__pb2.Service()
         solver.ParseFromString(open('__registry__/'+s+'.service', 'rb').read())
@@ -122,10 +134,17 @@ if input("\nGo to train? (y/n)")=='y':
         # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
         # ha hecho la seleccion del solver.)
         print('\n ---- ', i)
+
         print(' SOLVING CNF ...')
         t = time()
         interpretation = c_stub.Solve(cnf)
-        print(interpretation, str(time()-t)+' OKAY THE INTERPRETATION WAS ')
+        print(str(time()-t)+' OKAY THE INTERPRETATION WAS ', interpretation, '.')
+
+        print(' SOLVING CNF ON DIRECT SOLVER ...')
+        t = time()
+        interpretation = frontier_stub.Solve(cnf)
+        print(str(time()-t)+' OKAY THE FRONTIER SAID ', interpretation, '.')
+
         print('Obtiene el data_set.')
         open('dataset.bin', 'wb').write(c_stub.GetDataSet(api_pb2.Empty()).SerializeToString())
 
@@ -165,7 +184,6 @@ for tensor in c_stub.GetTensor(api_pb2.Empty()):
 
 print('Obtiene el data_set.')
 dataset = c_stub.GetDataSet(api_pb2.Empty())
-print('\n\DATASET -> ', dataset)
 open('dataset.bin', 'wb').write(dataset.SerializeToString())
 
 
