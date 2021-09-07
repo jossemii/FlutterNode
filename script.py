@@ -17,6 +17,19 @@ MOJITO = '192.168.1.143'
 TEQUILA = '192.168.1.63'
 GATEWAY = MOJITO
 
+def is_good(cnf, interpretation):
+    def good_clause(clause, interpretation):
+        for var in clause.literal:
+            for i in interpretation.variable:
+                if var == i:
+                    return True
+        return False
+
+    for clause in cnf.clause:
+        if not good_clause(clause, interpretation):
+            return False
+    return True
+
 def generator(hash: str):
     transport = gateway_pb2.ServiceTransport()
     transport.hash.type = bytes.fromhex(SHA3_256)
@@ -125,8 +138,8 @@ if input("\nGo to train? (y/n)")=='y':
 
 
     print('Wait to train the model ...')
-    for i in range(5): 
-        for j in range(10):
+    for i in range(10): 
+        for j in range(5):
             print(' time ', i, j)
             sleep(200)
         
@@ -138,7 +151,7 @@ if input("\nGo to train? (y/n)")=='y':
         print(' SOLVING CNF ...')
         t = time()
         interpretation = c_stub.Solve(cnf)
-        print(str(time()-t)+' OKAY THE INTERPRETATION WAS ', interpretation, '.')
+        print(str(time()-t)+' OKAY THE INTERPRETATION WAS ', interpretation, '.', is_good(interpretation))
 
         print(' SOLVING CNF ON DIRECT SOLVER ...')
         t = time()
@@ -154,7 +167,7 @@ if input("\nGo to train? (y/n)")=='y':
                     grpc.insecure_channel(frontier_uri)
                     )
                 interpretation = frontier_stub.Solve(cnf)
-        print(str(time()-t)+' OKAY THE FRONTIER SAID ', interpretation, '.')
+        print(str(time()-t)+' OKAY THE FRONTIER SAID ', interpretation, '.', is_good(interpretation))
 
         print('Obtiene el data_set.')
         open('dataset.bin', 'wb').write(c_stub.GetDataSet(api_pb2.Empty()).SerializeToString())
@@ -176,7 +189,7 @@ def final_test(c_stub, r_stub, i, j):
 for i in range(3):
     sleep(10)
     threads = []
-    for j in range(10 if i%2==0 else 4):
+    for j in range(10):
         t = threading.Thread(target=final_test, args=(c_stub, r_stub, i, j, ))
         threads.append(t)
         t.start()
