@@ -2,7 +2,7 @@ import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, js
 from time import sleep, time
 
 
-SORTER = "7f653471c8a51f1a10ebb50c9b61a2bf4d4844e871c98e217bc311271a7a5b18"
+SORTER = "7bcb1809dbe4fc673c03204e694f65414e6e654ebc70b5495cf117917dfdaf66"
 RANDOM = '4bae4b952f0b9fa4f658585965692caa1f530fb1dee2f01f94b451f4abae9c96'
 FRONTIER = '038e4eb5ecf1166368ab1d4ee51168f689721ed4a39bbc90efa6eb4995b26953'
 WALL = '7d05071d88751a6f378fe32bee204380cb3c95574c0cc47368efc00f81a81971'
@@ -142,7 +142,18 @@ if input("\nGo to train? (y/n)")=='y':
 
         print(' SOLVING CNF ON DIRECT SOLVER ...')
         t = time()
-        interpretation = frontier_stub.Solve(cnf)
+        try:
+            interpretation = frontier_stub.Solve(cnf)
+        except(grpc.RpcError):
+                # Get the frontier for test it.
+                uri=g_stub.StartService(generator(
+                    hash=FRONTIER
+                )).instance.uri_slot[0].uri[0]
+                frontier_uri = uri.ip +':'+ str(uri.port)
+                frontier_stub = api_pb2_grpc.SolverStub(
+                    grpc.insecure_channel(frontier_uri)
+                    )
+                interpretation = frontier_stub.Solve(cnf)
         print(str(time()-t)+' OKAY THE FRONTIER SAID ', interpretation, '.')
 
         print('Obtiene el data_set.')
