@@ -2,6 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
+import celaut_pb2 as celaut__pb2
 import gateway_pb2 as gateway__pb2
 
 
@@ -24,6 +25,26 @@ class GatewayStub(object):
                 request_serializer=gateway__pb2.TokenMessage.SerializeToString,
                 response_deserializer=gateway__pb2.Empty.FromString,
                 )
+        self.Hynode = channel.unary_unary(
+                '/gateway.Gateway/Hynode',
+                request_serializer=gateway__pb2.Instance.SerializeToString,
+                response_deserializer=gateway__pb2.Instance.FromString,
+                )
+        self.GetFile = channel.stream_unary(
+                '/gateway.Gateway/GetFile',
+                request_serializer=celaut__pb2.Any.Metadata.HashTag.Hash.SerializeToString,
+                response_deserializer=celaut__pb2.Any.FromString,
+                )
+        self.GetServiceTar = channel.stream_stream(
+                '/gateway.Gateway/GetServiceTar',
+                request_serializer=gateway__pb2.ServiceTransport.SerializeToString,
+                response_deserializer=gateway__pb2.Chunk.FromString,
+                )
+        self.GetServiceCost = channel.stream_unary(
+                '/gateway.Gateway/GetServiceCost',
+                request_serializer=gateway__pb2.ServiceTransport.SerializeToString,
+                response_deserializer=gateway__pb2.CostMessage.FromString,
+                )
 
 
 class GatewayServicer(object):
@@ -41,6 +62,30 @@ class GatewayServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Hynode(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetFile(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetServiceTar(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetServiceCost(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_GatewayServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -53,6 +98,26 @@ def add_GatewayServicer_to_server(servicer, server):
                     servicer.StopService,
                     request_deserializer=gateway__pb2.TokenMessage.FromString,
                     response_serializer=gateway__pb2.Empty.SerializeToString,
+            ),
+            'Hynode': grpc.unary_unary_rpc_method_handler(
+                    servicer.Hynode,
+                    request_deserializer=gateway__pb2.Instance.FromString,
+                    response_serializer=gateway__pb2.Instance.SerializeToString,
+            ),
+            'GetFile': grpc.stream_unary_rpc_method_handler(
+                    servicer.GetFile,
+                    request_deserializer=celaut__pb2.Any.Metadata.HashTag.Hash.FromString,
+                    response_serializer=celaut__pb2.Any.SerializeToString,
+            ),
+            'GetServiceTar': grpc.stream_stream_rpc_method_handler(
+                    servicer.GetServiceTar,
+                    request_deserializer=gateway__pb2.ServiceTransport.FromString,
+                    response_serializer=gateway__pb2.Chunk.SerializeToString,
+            ),
+            'GetServiceCost': grpc.stream_unary_rpc_method_handler(
+                    servicer.GetServiceCost,
+                    request_deserializer=gateway__pb2.ServiceTransport.FromString,
+                    response_serializer=gateway__pb2.CostMessage.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -95,5 +160,73 @@ class Gateway(object):
         return grpc.experimental.unary_unary(request, target, '/gateway.Gateway/StopService',
             gateway__pb2.TokenMessage.SerializeToString,
             gateway__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Hynode(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/gateway.Gateway/Hynode',
+            gateway__pb2.Instance.SerializeToString,
+            gateway__pb2.Instance.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetFile(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_unary(request_iterator, target, '/gateway.Gateway/GetFile',
+            celaut__pb2.Any.Metadata.HashTag.Hash.SerializeToString,
+            celaut__pb2.Any.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetServiceTar(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_stream(request_iterator, target, '/gateway.Gateway/GetServiceTar',
+            gateway__pb2.ServiceTransport.SerializeToString,
+            gateway__pb2.Chunk.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetServiceCost(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_unary(request_iterator, target, '/gateway.Gateway/GetServiceCost',
+            gateway__pb2.ServiceTransport.SerializeToString,
+            gateway__pb2.CostMessage.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

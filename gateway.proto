@@ -1,6 +1,6 @@
 syntax = "proto3";
 package gateway;
-import "ipss.proto";
+import "celaut.proto";
 
 message Empty {}
 
@@ -8,20 +8,34 @@ message TokenMessage {
     string token = 1;
 }
 
+message CostMessage {
+    int32 cost = 1;
+}
+
 message Instance {
-    ipss.Instance instance = 1;
-    string token = 2;
+    optional celaut.Any.Metadata instance_meta = 1;
+    celaut.Instance instance = 2;
+    optional string token = 3;
 }
 
 message ServiceTransport {
     oneof oneOf{
-        ipss.HashTag.Hash hash = 1;
-        ipss.Service service = 2;
+        celaut.Any.Metadata.HashTag.Hash hash = 1;
+        celaut.Service service = 2;
     }
-    optional ipss.Configuration config = 3;
+    optional celaut.Configuration config = 3;
+}
+
+message Chunk  {
+    bytes buffer = 1;
 }
 
 service Gateway {
     rpc StartService( stream ServiceTransport) returns (Instance) {}
     rpc StopService(TokenMessage) returns (Empty) {}
+    rpc Hynode(Instance) returns (Instance) {}
+    
+    rpc GetFile(stream celaut.Any.Metadata.HashTag.Hash) returns (celaut.Any) {}
+    rpc GetServiceTar(stream ServiceTransport) returns (stream Chunk) {}
+    rpc GetServiceCost(stream ServiceTransport) returns (CostMessage) {}
 }
