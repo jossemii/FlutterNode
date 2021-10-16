@@ -1,3 +1,4 @@
+from celaut_pb2 import Configuration
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2
 from time import sleep, time
 
@@ -15,7 +16,7 @@ SHA3_256 = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a'
 WHISKY = '192.168.1.54'
 MOJITO = '192.168.1.144'
 TEQUILA = '192.168.1.63'
-GATEWAY = WHISKY
+GATEWAY = MOJITO
 
 def is_good(cnf, interpretation):
     def good_clause(clause, interpretation):
@@ -31,11 +32,13 @@ def is_good(cnf, interpretation):
     return True
 
 def generator(hash: str):
-    transport = gateway_pb2.ServiceTransport()
-    transport.hash.type = bytes.fromhex(SHA3_256)
-    transport.hash.value = bytes.fromhex(hash)
-    transport.config.CopyFrom(gateway_pb2.ipss__pb2.Configuration())
-    yield transport
+    yield gateway_pb2.ServiceTransport(
+        hash = gateway_pb2.celaut__pb2.Any.Metadata.HashTag.Hash(
+            type = bytes.fromhex(SHA3_256),
+            value = bytes.fromhex(hash)
+        ),
+        config = gateway_pb2.celaut__pb2.Configuration()
+    )
 
 
 # Start the script.
@@ -55,9 +58,11 @@ if type(json.load(open('script_data.json', 'r'))) != dict:
     print('Get new services....')
 
     # Get a classifier.
-    classifier = g_stub.StartService(generator(
-        hash=SORTER
-    ))
+    classifier = g_stub.StartService(
+        generator(
+            hash = SORTER
+        )
+    )
     print(classifier)
     uri=classifier.instance.uri_slot[0].uri[0]
     c_uri = uri.ip +':'+ str(uri.port)
@@ -78,23 +83,24 @@ if type(json.load(open('script_data.json', 'r'))) != dict:
         )
     print('Tenemos random. ', r_stub)
 
-    # Get the frontier for test it.
-    uri=g_stub.StartService(generator(
-        hash=FRONTIER
-    )).instance.uri_slot[0].uri[0]
-    frontier_uri = uri.ip +':'+ str(uri.port)
-    frontier_stub = api_pb2_grpc.SolverStub(
-        grpc.insecure_channel(frontier_uri)
-        )
+    if FRONTIER != '':
+        # Get the frontier for test it.
+        uri=g_stub.StartService(generator(
+            hash=FRONTIER
+        )).instance.uri_slot[0].uri[0]
+        frontier_uri = uri.ip +':'+ str(uri.port)
+        frontier_stub = api_pb2_grpc.SolverStub(
+            grpc.insecure_channel(frontier_uri)
+            )
 
-    print('Tenemos frontier ', frontier_stub)
+        print('Tenemos frontier ', frontier_stub)
 
     # save stubs on json.
     with open('script_data.json', 'w') as file:
         json.dump({
             'sorter': c_uri,
             'random': r_uri,
-            'frontier': frontier_uri,
+            #'frontier': frontier_uri,
         }, file)
 
 else:
