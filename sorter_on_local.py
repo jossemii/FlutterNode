@@ -1,3 +1,4 @@
+from celaut_pb2 import Service
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2
 from time import sleep, time
 
@@ -74,9 +75,16 @@ if input("\nGo to train? (y/n)")=='y':
     # Añade solvers.
     for s in [FRONTIER, WALK, WALL]:
         print('     ', s)
-        solver = api_pb2.celaut__pb2.Service()
-        solver.ParseFromString(open('__registry__/'+s+'.service', 'rb').read())
-        c_stub.UploadSolver(solver)
+        any = api_pb2.celaut__pb2.Any()
+        any.ParseFromString(open('__registry__/'+s, 'rb').read())
+        service = api_pb2.celaut__pb2.Service()
+        service.ParseFromString(any.value)
+        c_stub.UploadSolver(
+            api_pb2.ServiceWithMeta(
+                meta = any.metadata,
+                service = service
+            )
+        )
 
 
     print('Wait to train the model ...')

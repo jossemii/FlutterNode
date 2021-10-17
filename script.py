@@ -138,9 +138,16 @@ if input("\nGo to train? (y/n)")=='y':
     # Añade solvers.
     for s in  [LISIADO_UNDER, LISIADO_OVER ]:#, FRONTIER, WALL, WALK]:
         print('     ', s)
-        solver = api_pb2.ipss__pb2.Service()
-        solver.ParseFromString(open('__registry__/'+s+'.service', 'rb').read())
-        c_stub.UploadSolver(solver)
+        any = api_pb2.celaut__pb2.Any()
+        any.ParseFromString(open('__registry__/'+s, 'rb').read())
+        service = api_pb2.celaut__pb2.Service()
+        service.ParseFromString(any.value)
+        c_stub.UploadSolver(
+            api_pb2.ServiceWithMeta(
+                meta = any.metadata,
+                service = service
+            )
+        )
 
 
     print('Wait to train the model ...')
