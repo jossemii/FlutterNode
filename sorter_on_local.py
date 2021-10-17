@@ -1,25 +1,28 @@
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2
 from time import sleep, time
 
-RANDOM = '4bae4b952f0b9fa4f658585965692caa1f530fb1dee2f01f94b451f4abae9c96'
-FRONTIER = '038e4eb5ecf1166368ab1d4ee51168f689721ed4a39bbc90efa6eb4995b26953'
-WALL = '7d05071d88751a6f378fe32bee204380cb3c95574c0cc47368efc00f81a81971'
-WALK = '8012f59dd6ea6471ac9b8d18c6b7594237d1e03206e3e66693c2168793a5f6f2'
-LISIADO_UNDER = '4c7b30d0960171cce80faa2752f2470c704bf72840a405c7f950be5b2e870903'
-LISIADO_OVER = 'bb64cd53a47ebe6f84cd086254eb66ccfdfaa983d0435c32e48703dcfc819b67'
+RANDOM = 'b7b31b23f9c236b2bee3e27e48f8e592128e33e7c9519922db151c4d6c6d8ec3'
+FRONTIER = '1b843c8c42ccc6f364f2e8382e01733c2653c27b425e702e3c9b1de9d93bddbd'
+WALL = '8c24a0726ff2a82ff1e66a65cb287ac7ab36262d171e56faf8784ffb5aef9748'
+WALK = 'b1376051fcb0218eb66b97f7efee150880edb7434f3afc04252641c43551897f'
+LISIADO_UNDER = ''
+LISIADO_OVER = ''
 
 SHA3_256 = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a'
 
-WHISKY = '192.168.1.114'
-MOJITO = '192.168.1.143'
+WHISKY = '192.168.1.54'
+MOJITO = '192.168.1.144'
+TEQUILA = '192.168.1.63'
 GATEWAY = MOJITO
 
 def generator(hash: str):
-    transport = gateway_pb2.ServiceTransport()
-    transport.hash.type = bytes.fromhex(SHA3_256)
-    transport.hash.value = bytes.fromhex(hash)
-    transport.config.CopyFrom(gateway_pb2.ipss__pb2.Configuration())
-    yield transport
+    yield gateway_pb2.ServiceTransport(
+        hash = gateway_pb2.celaut__pb2.Any.Metadata.HashTag.Hash(
+            type = bytes.fromhex(SHA3_256),
+            value = bytes.fromhex(hash)
+        ),
+        config = gateway_pb2.celaut__pb2.Configuration()
+    )
 
 
 
@@ -69,9 +72,9 @@ if input("\nGo to train? (y/n)")=='y':
 
     print('Subiendo solvers al clasificador.')
     # Añade solvers.
-    for s in [LISIADO_OVER, LISIADO_UNDER]:
+    for s in [FRONTIER, WALK, WALL]:
         print('     ', s)
-        solver = api_pb2.ipss__pb2.Service()
+        solver = api_pb2.celaut__pb2.Service()
         solver.ParseFromString(open('__registry__/'+s+'.service', 'rb').read())
         c_stub.UploadSolver(solver)
 
