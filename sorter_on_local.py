@@ -21,11 +21,11 @@ c_stub = api_pb2_grpc.SolverStub(
 print('Tenemos clasificador. ', c_stub)
 
 # Get random cnf
-random_cnf_service = client_grpc(
+random_cnf_service = next(client_grpc(
     method = g_stub.StartService,
     output_field=gateway_pb2.Instance,
     input=generator(hash=RANDOM)
-)[0]
+))
 
 print(random_cnf_service)
 uri=random_cnf_service.instance.uri_slot[0].uri[0]
@@ -81,21 +81,21 @@ if input("\nGo to train? (y/n)")=='y':
             print(' time ', i, j)
             sleep(200)
         
-        cnf = client_grpc(
+        cnf = next(client_grpc(
             method=r_stub.RandomCnf,
             input=api_pb2.Empty(),
             output_field=api_pb2.Cnf
-        )[0]
+        ))
         # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
         # ha hecho la seleccion del solver.)
         print('\n ---- ', i)
         print(' SOLVING CNF ...')
         t = time()
-        interpretation = client_grpc(
+        interpretation = next(client_grpc(
             method=c_stub.Solve,
             output_field=api_pb2.Interpretation,
             input=cnf
-        )[0]
+        ))
         print(interpretation, str(time()-t)+' OKAY THE INTERPRETATION WAS ')
 
     sleep(60)
@@ -110,17 +110,17 @@ client_grpc(
 # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
 # ha hecho la seleccion del solver.)
 def final_test(c_stub, r_stub, i, j):
-    cnf = client_grpc(
+    cnf = next(client_grpc(
         method=r_stub.RandomCnf,
         input=api_pb2.Empty,
         output_field=api_pb2.Cnf
-    )[0]
+    ))
     t = time()
-    interpretation = client_grpc(
+    interpretation = next(client_grpc(
         method=c_stub.Solve,
         input=cnf,
         output_field=api_pb2.Interpretation
-    )[0]
+    ))
     print(interpretation, str(time()-t)+'THE FINAL INTERPRETATION IN THREAD '+str(threading.get_ident()),' last time ', i, j)
 
 
@@ -135,11 +135,11 @@ for i in range(1):
         t.join()
 
 print('Obtiene el data_set.')
-dataset = client_grpc(
+dataset = next(client_grpc(
     method=c_stub.GetDataSet,
     input=api_pb2.Empty,
     output_field=api_pb2.solvers__dataset__pb2.DataSet
-)
+))
 print('\n\DATASET -> ', dataset)
 open('dataset.bin', 'wb').write(dataset.SerializeToString())
 

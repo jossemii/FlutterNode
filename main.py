@@ -1,7 +1,7 @@
-RANDOM = 'b7b31b23f9c236b2bee3e27e48f8e592128e33e7c9519922db151c4d6c6d8ec3'
-FRONTIER = '1b843c8c42ccc6f364f2e8382e01733c2653c27b425e702e3c9b1de9d93bddbd'
-WALL = '8c24a0726ff2a82ff1e66a65cb287ac7ab36262d171e56faf8784ffb5aef9748'
-WALK = 'b1376051fcb0218eb66b97f7efee150880edb7434f3afc04252641c43551897f'
+RANDOM = ''
+FRONTIER = ''
+WALL = ''
+WALK = ''
 LISIADO_UNDER = ''
 LISIADO_OVER = ''
 
@@ -32,13 +32,13 @@ def save_chunks_to_file(chunks: gateway_pb2.Buffer, filename):
         for buffer in chunks:
             f.write(buffer.chunk)
 
-def parse_from_buffer(request_iterator, message_field = None) -> Generator:
+def parse_from_buffer(request_iterator, message_field = None):
     while True:
-        all_buffer = ''
+        all_buffer = bytes('', encoding='utf-8')
         for buffer in request_iterator:
             if buffer.separator:
                 break
-            all_buffer.append(buffer.chunk)
+            all_buffer += buffer.chunk
         
         if message_field: 
             message = message_field()
@@ -52,17 +52,18 @@ def parse_from_buffer(request_iterator, message_field = None) -> Generator:
 def serialize_to_buffer(message_iterator):
     if not hasattr(message_iterator, '__iter__'): message_iterator=[message_iterator]
     for message in message_iterator:
-        for chunk in message.SerializeToString().read(CHUNK_SIZE):
-            yield gateway_pb2.Buffer(
-                chunk = chunk
+        byte_list = list(message.SerializeToString())
+        for chunk in [byte_list[i:i + CHUNK_SIZE] for i in range(0, len(byte_list), CHUNK_SIZE)]:
+            buffer =  gateway_pb2.Buffer(
+                chunk = bytes(chunk)
             )
+            yield buffer
         yield gateway_pb2.Buffer(
-            separator = ''
+            separator = bytes('', encoding='utf-8')
         )
 
-
-def client_grpc(method, output_field = None, input=None, timeout=None) -> Generator:
-    return parse_from_buffer(
+def client_grpc(method, output_field = None, input=None, timeout=None):
+    for b in parse_from_buffer(
         request_iterator = method(
                             serialize_to_buffer(
                                 input if input else ''
@@ -70,13 +71,4 @@ def client_grpc(method, output_field = None, input=None, timeout=None) -> Genera
                             timeout = timeout
                         ),
         message_field = output_field
-    )
-
-def generator(hash: str):
-    yield gateway_pb2.ServiceTransport(
-        hash = gateway_pb2.celaut__pb2.Any.Metadata.HashTag.Hash(
-            type = bytes.fromhex(SHA3_256),
-            value = bytes.fromhex(hash)
-        ),
-        config = gateway_pb2.celaut__pb2.Configuration()
-    )
+    ): yield b
