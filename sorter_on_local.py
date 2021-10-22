@@ -41,10 +41,10 @@ sleep(10) # Espera a que el servidor se levante.
 try:
     dataset = solvers_dataset_pb2.DataSet()
     dataset.ParseFromString(open('dataset.bin', 'rb').read())
-    client_grpc(
+    next(client_grpc(
         method=c_stub.AddDataSet,
         input=dataset
-    )
+    ))
     print('Dataset añadido.')
 except Exception as e:
     print('No tenemos dataset.')
@@ -53,10 +53,10 @@ except Exception as e:
 if input("\nGo to train? (y/n)")=='y':
     print('Iniciando entrenamiento...')
     # Inicia el entrenamiento.
-    client_grpc(
+    next(client_grpc(
         method=c_stub.StartTrain,
         input=api_pb2.Empty()
-    )
+    ))
 
     print('Subiendo solvers al clasificador.')
     # Añade solvers.
@@ -66,13 +66,13 @@ if input("\nGo to train? (y/n)")=='y':
         any.ParseFromString(open('__registry__/'+s, 'rb').read())
         service = api_pb2.celaut__pb2.Service()
         service.ParseFromString(any.value)
-        client_grpc(
+        next(client_grpc(
             method=c_stub.UploadSolver,
             input=api_pb2.ServiceWithMeta(
                     meta = any.metadata,
                     service = service
                 )
-        )
+        ))
 
 
     print('Wait to train the model ...')
@@ -102,10 +102,10 @@ if input("\nGo to train? (y/n)")=='y':
 
 print('Termina el entrenamiento')
 # En caso de que estubiera entrenando lo finaliza.
-client_grpc(
+next(client_grpc(
     method=c_stub.StopTrain,
     input=api_pb2.Empty
-)
+))
 
 # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
 # ha hecho la seleccion del solver.)
@@ -148,10 +148,10 @@ print('waiting for kill solvers ...')
 sleep(700)
 
 # Stop Random cnf service.
-client_grpc(
+next(client_grpc(
     method=g_stub.StopService,
     input=gateway_pb2.TokenMessage(token=random_cnf_service.token)
-)
+))
 print('All good?')
 
 with open('script_data.json', 'w') as file:

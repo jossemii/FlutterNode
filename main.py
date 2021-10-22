@@ -63,9 +63,10 @@ def serialize_to_buffer(message_iterator):
     for message in message_iterator:
         byte_list = list(message.SerializeToString())
         for chunk in [byte_list[i:i + CHUNK_SIZE] for i in range(0, len(byte_list), CHUNK_SIZE)]:
-            yield gateway_pb2.Buffer(
-                chunk = bytes(chunk)
-            )
+            b = gateway_pb2.Buffer(
+                            chunk = bytes(chunk)
+                        )
+            yield b
         yield gateway_pb2.Buffer(
             separator = bytes('', encoding='utf-8')
         )
