@@ -36,7 +36,7 @@ r_stub = api_pb2_grpc.RandomStub(
 
 print('Tenemos random. ', r_stub)
 
-sleep(10) # Espera a que el servidor se levante.
+#sleep(10) # Espera a que el servidor se levante.
 
 try:
     dataset = solvers_dataset_pb2.DataSet()
@@ -60,7 +60,7 @@ if input("\nGo to train? (y/n)")=='y':
 
     print('Subiendo solvers al clasificador.')
     # Añade solvers.
-    for s in [FRONTIER, WALK, WALL]:
+    for s in [FRONTIER]:
         print('     ', s)
         any = api_pb2.celaut__pb2.Any()
         any.ParseFromString(open('__registry__/'+s, 'rb').read())
