@@ -13,13 +13,11 @@ def service_extended(hash):
         if config:  # Solo hace falta enviar la configuracion en el primer paquete.
             transport.config.CopyFrom(celaut_pb2.Configuration())
             config = False
-        print('service transport little')
         yield transport
     transport.ClearField('hash')
     if config: transport.config.CopyFrom(celaut_pb2.Configuration())
     transport.service.service.ParseFromString(any.value)
     transport.service.meta.CopyFrom(any.metadata)
-    print('service transport big')
     yield transport
 
 
