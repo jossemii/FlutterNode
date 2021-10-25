@@ -1,2 +1,3 @@
 script_data.json
 __pycache__/
+__registry__/*
