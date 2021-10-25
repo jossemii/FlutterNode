@@ -60,7 +60,7 @@ if input("\nGo to train? (y/n)")=='y':
 
     print('Subiendo solvers al clasificador.')
     # Añade solvers.
-    for s in [FRONTIER, WALL]:
+    for s in [FRONTIER, WALL, WALK]:
         print('     ', s)
         any = api_pb2.celaut__pb2.Any()
         any.ParseFromString(open('__registry__/'+s, 'rb').read())

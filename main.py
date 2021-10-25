@@ -1,7 +1,7 @@
-RANDOM = ''
-FRONTIER = ''
-WALL = ''
-WALK = ''
+RANDOM = '0a8f63bfc040dee78ce75f566cebd79ba6a95105653e4a83f44293b1c54a25e3'
+FRONTIER = '921e3910a78f345fa0a7924e5f44fd65fe87b6431df4b0b6dce9fb9c6df3155a'
+WALL = '52e760af042a8014a8b07bf6a4586991a09e58bf8f7117462fc25e73f546f30d'
+WALK = '22a0bd5d09cc5ee6ceed3cca5b8515b9f0bcb22d297603b6177c75bd5b473cee'
 LISIADO_UNDER = ''
 LISIADO_OVER = ''
 
@@ -100,6 +100,7 @@ def serialize_to_buffer(message_iterator, signal = Signal(exist=False), cache_di
         else:
             try:
                 signal.wait()
+                print('vamos a pasar todo a lista ', len(message_bytes))
                 byte_list = list(message_bytes)
                 for chunk in [byte_list[i:i + CHUNK_SIZE] for i in range(0, len(byte_list), CHUNK_SIZE)]:
                     signal.wait()
@@ -111,6 +112,7 @@ def serialize_to_buffer(message_iterator, signal = Signal(exist=False), cache_di
             except: # INEFICIENT.    
                 try:
                     signal.wait()
+                    print('vamos a escribir en cache ', len(message_bytes))
                     file = cache_dir + str(len(message_bytes))
                     open(file, 'wb').write(message_bytes)
                     for b in get_file_chunks(file): 
