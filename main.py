@@ -22,7 +22,7 @@ def generator(hash: str):
     )
 
 CHUNK_SIZE = 1024 * 1024  # 1MB
-import os, shutil
+import os, shutil, gc
 import gateway_pb2
 from random import randint
 from typing import Generator
@@ -51,13 +51,17 @@ class Signal():
             with self.condition:
                 self.condition.wait()
 
-def get_file_chunks(filename) -> Generator[gateway_pb2.Buffer, None, None]:
+def get_file_chunks(filename, signal = Signal(exist=False)) -> Generator[gateway_pb2.Buffer, None, None]:
+    signal.wait()
     with open(filename, 'rb') as f:
         while True:
+            signal.wait()
             piece = f.read(CHUNK_SIZE);
             if len(piece) == 0:
                 return
-            yield gateway_pb2.Buffer(chunk=piece)
+            try:
+                yield gateway_pb2.Buffer(chunk=piece)
+            finally: signal.wait()
 
 
 def save_chunks_to_file(chunks: gateway_pb2.Buffer, filename):
@@ -115,7 +119,7 @@ def serialize_to_buffer(message_iterator, signal = Signal(exist=False), cache_di
                     print('vamos a escribir en cache ', len(message_bytes))
                     file = cache_dir + str(len(message_bytes))
                     open(file, 'wb').write(message_bytes)
-                    for b in get_file_chunks(file): 
+                    for b in get_file_chunks(file, signal=signal): 
                         signal.wait()
                         try:
                             yield b
@@ -123,6 +127,7 @@ def serialize_to_buffer(message_iterator, signal = Signal(exist=False), cache_di
                 finally:
                     try:
                         os.remove(file)
+                        gc.collect()
                     except: pass
 
         try:
@@ -151,4 +156,5 @@ def client_grpc(method, output_field = None, input=None, timeout=None):
     finally:
         try:
             shutil.rmtree(cache_dir)
+            gc.collect()
         except: pass

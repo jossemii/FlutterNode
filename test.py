@@ -1,14 +1,18 @@
 from time import sleep
-import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2_grpc, api_pb2, celaut_pb2
+import gc, grpc, gateway_pb2, gateway_pb2_grpc, api_pb2_grpc, api_pb2, celaut_pb2
 
 from main import GATEWAY, WALL, RANDOM, client_grpc
 
 def service_extended(hash):
     any = api_pb2.celaut__pb2.Any()
     any.ParseFromString(open('__registry__/'+hash, 'rb').read())
+    hashes = any.metadata.hashtag.hash
+    del any
+    gc.collect()
+
     config = True
     transport = gateway_pb2.ServiceTransport()
-    for hash in any.metadata.hashtag.hash:
+    for hash in hashes:
         transport.hash.CopyFrom(hash)
         if config:  # Solo hace falta enviar la configuracion en el primer paquete.
             transport.config.CopyFrom(celaut_pb2.Configuration())
@@ -16,8 +20,13 @@ def service_extended(hash):
         yield transport
     transport.ClearField('hash')
     if config: transport.config.CopyFrom(celaut_pb2.Configuration())
+
+    any = api_pb2.celaut__pb2.Any()
+    any.ParseFromString(open('__registry__/'+hash, 'rb').read())
     transport.service.service.ParseFromString(any.value)
     transport.service.meta.CopyFrom(any.metadata)
+    del any
+    gc.collect()
     yield transport
 
 
