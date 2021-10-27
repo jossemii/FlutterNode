@@ -158,3 +158,10 @@ def client_grpc(method, output_field = None, input=None, timeout=None):
             shutil.rmtree(cache_dir)
             gc.collect()
         except: pass
+
+
+"""
+    Serialize Object to plain bytes serialization.
+"""
+def serialize_to_plain(object: object) -> bytes:
+    pass
