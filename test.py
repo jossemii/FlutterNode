@@ -1,34 +1,28 @@
 from time import sleep
-import gc, grpc, gateway_pb2, gateway_pb2_grpc, api_pb2_grpc, api_pb2, celaut_pb2
+import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2_grpc, api_pb2, celaut_pb2
 
 from main import GATEWAY, WALL, RANDOM, client_grpc
+from gateway_pb2_grpc_indices import StartService_indices
 
 def service_extended(hash):
     any = api_pb2.celaut__pb2.Any()
     any.ParseFromString(open('__registry__/'+hash, 'rb').read())
-    hashes = any.metadata.hashtag.hash
-    del any
-    gc.collect()
 
     config = True
-    transport = gateway_pb2.ServiceTransport()
-    for hash in hashes:
-        transport.hash.CopyFrom(hash)
+    for hash in any.metadata.hashtag.hash:
         if config:  # Solo hace falta enviar la configuracion en el primer paquete.
-            transport.config.CopyFrom(celaut_pb2.Configuration())
             config = False
-        yield transport
-    transport.ClearField('hash')
-    if config: transport.config.CopyFrom(celaut_pb2.Configuration())
+            yield gateway_pb2.HashWithConfig(
+                hash = hash,
+                config = celaut_pb2.Configuration()
+            )
+        yield hash
 
-    any = api_pb2.celaut__pb2.Any()
-    any.ParseFromString(open('__registry__/'+hash, 'rb').read())
-    transport.service.service.ParseFromString(any.value)
-    transport.service.meta.CopyFrom(any.metadata)
-    del any
-    gc.collect()
-    yield transport
-
+    if config: yield gateway_pb2.ServiceWithConfig(
+        service = any,
+        config = celaut_pb2.Configuration()
+    )
+    else: yield any
 
 def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
     for slot in instance.api.slot:
@@ -50,7 +44,8 @@ print('\n\nGet new services....')
 solver = next(client_grpc(
     method = g_stub.StartService,
     output_field=gateway_pb2.Instance,
-    input=service_extended(hash=WALL)
+    input=service_extended(hash=WALL),
+    indices=StartService_indices
 ))
 
 uri = get_grpc_uri(solver.instance)
@@ -70,7 +65,8 @@ print('\n\nGet new services....')
 random = next(client_grpc(
     method = g_stub.StartService,
     output_field=gateway_pb2.Instance,
-    input=service_extended(hash=RANDOM)
+    input=service_extended(hash=RANDOM),
+    indices=StartService_indices
 ))
 
 uri = get_grpc_uri(random.instance)
