@@ -69,8 +69,7 @@ def save_chunks_to_file(chunks: gateway_pb2.Buffer, filename):
         for buffer in chunks:
             f.write(buffer.chunk)
 
-def parse_from_buffer(request_iterator, signal = Signal(exist=False), indices: dict = None): # indice: method
-    if not indices: message_field = None
+def parse_from_buffer(request_iterator, message_field = None, signal = Signal(exist=False), indices: dict = None): # indice: method
     if len(indices) == 1: message_field = list(indices.values())[0]
     while True:
         all_buffer = bytes('', encoding='utf-8')
@@ -86,7 +85,7 @@ def parse_from_buffer(request_iterator, signal = Signal(exist=False), indices: d
                 continue
             if buffer.HasField('chunk'):
                 all_buffer += buffer.chunk
-        if message_field: 
+        if message_field:
             message = message_field()
             message.ParseFromString(
                 all_buffer
@@ -145,7 +144,7 @@ def serialize_to_buffer(message_iterator, signal = Signal(exist=False), cache_di
                         gc.collect()
                     except: pass
 
-def client_grpc(method, output_field = None, input=None, timeout=None, indices: dict = None): # indice: method
+def client_grpc(method, output_field = None, input=None, timeout=None, indices_parser: dict = None, indices_serializer: dict = None): # indice: method
     signal = Signal()
     cache_dir = os.path.abspath(os.curdir) + '/__hycache__/grpcbigbuffer' + str(randint(1,999)) + '/'
     os.mkdir(cache_dir)
@@ -156,13 +155,13 @@ def client_grpc(method, output_field = None, input=None, timeout=None, indices: 
                                     input if input else '',
                                     signal = signal,
                                     cache_dir = cache_dir,
-                                    indices = {e[1]:e[0] for e in indices.items()} if indices else None
+                                    indices = {e[1]:e[0] for e in indices_serializer.items()} if indices_serializer else None
                                 ),
                                 timeout = timeout
                             ),
-            message_field = output_field,
+            message_field = output_field,  # TODO ????
             signal = signal,
-            indices = indices
+            indices = indices_parser
         ): yield b
     finally:
         try:

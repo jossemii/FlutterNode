@@ -42,10 +42,10 @@ g_stub = gateway_pb2_grpc.GatewayStub(
 # Get solver cnf
 print('\n\nGet new services....')
 solver = next(client_grpc(
-    method = g_stub.StartService,
+    method=g_stub.StartService,
     output_field=gateway_pb2.Instance,
     input=service_extended(hash=WALL),
-    indices=StartService_indices
+    indices_serializer=StartService_indices
 ))
 
 uri = get_grpc_uri(solver.instance)
@@ -66,7 +66,7 @@ random = next(client_grpc(
     method = g_stub.StartService,
     output_field=gateway_pb2.Instance,
     input=service_extended(hash=RANDOM),
-    indices=StartService_indices
+    indices_serializer=StartService_indices
 ))
 
 uri = get_grpc_uri(random.instance)
