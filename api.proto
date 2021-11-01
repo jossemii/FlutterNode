@@ -58,12 +58,12 @@ message Tensor { // Like Onxx but with only SolverWithConfig'field elements.
 }
 
 // GRPC.
-
 message Buffer  {
-    oneof oneof {
-        bytes chunk = 1;
+    bytes chunk = 1;
+    oneof oneof{       
         bytes separator = 2;
         bytes signal = 3;
+        int32 head = 4;
     }
 }
 

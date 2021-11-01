@@ -8,7 +8,7 @@ LISIADO_OVER = ''
 SHA3_256 = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a'
 
 WHISKY = '192.168.1.54'
-MOJITO = '192.168.1.144'
+MOJITO = '192.168.1.143'
 TEQUILA = '192.168.1.63'
 GATEWAY = MOJITO
 
@@ -21,6 +21,7 @@ def generator(hash: str):
         config = gateway_pb2.celaut__pb2.Configuration()
     )
 
+# GrpcBigBuffer.
 CHUNK_SIZE = 1024 * 1024  # 1MB
 import os, shutil, gc
 import gateway_pb2
@@ -53,38 +54,40 @@ class Signal():
 
 def get_file_chunks(filename, signal = Signal(exist=False)) -> Generator[gateway_pb2.Buffer, None, None]:
     signal.wait()
-    with open(filename, 'rb') as f:
-        while True:
-            signal.wait()
-            piece = f.read(CHUNK_SIZE);
-            if len(piece) == 0:
-                return
-            try:
+    try:
+        with open(filename, 'rb', buffering = CHUNK_SIZE) as f:
+            while True:
+                f.flush()
+                signal.wait()
+                piece = f.read(CHUNK_SIZE)
+                if len(piece) == 0: return
                 yield gateway_pb2.Buffer(chunk=piece)
-            finally: signal.wait()
+    finally: 
+        gc.collect()
 
 
-def save_chunks_to_file(chunks: gateway_pb2.Buffer, filename):
+def save_chunks_to_file(buffer_iterator, filename):
     with open(filename, 'wb') as f:
-        for buffer in chunks:
-            f.write(buffer.chunk)
+        f.write(''.join([buffer.chunk for buffer in buffer_iterator]))
 
 def parse_from_buffer(request_iterator, message_field = None, signal = Signal(exist=False), indices: dict = None): # indice: method
-    if len(indices) == 1: message_field = list(indices.values())[0]
+    if indices and len(indices) == 1: message_field = list(indices.values())[0]
     while True:
-        all_buffer = bytes('', encoding='utf-8')
+        all_buffer = bytes()
         while True:
             buffer = next(request_iterator)
-            if buffer.HasField('separator'):
+            # The order of conditions is important.
+            if buffer.HasField('head'):
                 try:
-                    message_field = indices[buffer.separator]
+                    message_field = indices[buffer.head]
                 except: pass
-                break
-            if buffer.HasField('signal'):
-                signal.change()
-                continue
             if buffer.HasField('chunk'):
                 all_buffer += buffer.chunk
+            if buffer.HasField('signal') and buffer.signal:
+                signal.change()
+                continue
+            if buffer.HasField('separator') and buffer.separator: 
+                break
         if message_field:
             message = message_field()
             message.ParseFromString(
@@ -92,48 +95,54 @@ def parse_from_buffer(request_iterator, message_field = None, signal = Signal(ex
             )
             yield message
         else:
-            yield all_buffer # Clean buffer index bytes.
+            yield all_buffer
 
 def serialize_to_buffer(message_iterator, signal = Signal(exist=False), cache_dir = None, indices: dict = None): # method: indice
     if not hasattr(message_iterator, '__iter__'): message_iterator=[message_iterator]
     for message in message_iterator:
-        try:
-            yield gateway_pb2.Buffer(
-                separator = indices[type(message)]
-            )
-        except:  # if not indices or the method not appear on it.
-            yield gateway_pb2.Buffer(
-                separator = bytes()
-            )
-        finally: signal.wait()
-
-        message_bytes = message.SerializeToString()
-        if len(message_bytes) < CHUNK_SIZE:
-            signal.wait()
+        if type(message) is tuple:
             try:
                 yield gateway_pb2.Buffer(
-                    chunk = bytes(message_bytes)
+                    head = indices[message[1]]
                 )
-            finally: signal.wait()
-        else:
+            except:
+                yield gateway_pb2.Buffer(head = 1)
+            
+            for b in get_file_chunks(filename = message[0], signal = signal):
+                yield b
+            
+            yield gateway_pb2.Buffer(separator = True)
+
+        else: # if message is a protobuf object.
             try:
+                    head = indices[type(message)]
+            except:  # if not indices or the method not appear on it.
+                    head = 1
+
+            message_bytes = message.SerializeToString()
+            if len(message_bytes) < CHUNK_SIZE:
                 signal.wait()
-                print('vamos a pasar todo a lista ', len(message_bytes))
-                byte_list = list(message_bytes)
-                for chunk in [byte_list[i:i + CHUNK_SIZE] for i in range(0, len(byte_list), CHUNK_SIZE)]:
-                    signal.wait()
-                    try:
-                        yield gateway_pb2.Buffer(
-                                        chunk = bytes(chunk)
-                                    )
-                    finally: signal.wait()
-            except: # INEFICIENT.    
+                try:
+                    yield gateway_pb2.Buffer(
+                        chunk = bytes(message_bytes),
+                        head = head,
+                        separator = True
+                    )
+                finally: signal.wait()
+
+            else:
+                try:
+                    yield gateway_pb2.Buffer(
+                        head = head
+                    )
+                finally: signal.wait()
+    
                 try:
                     signal.wait()
-                    print('vamos a escribir en cache ', len(message_bytes))
                     file = cache_dir + str(len(message_bytes))
-                    open(file, 'wb').write(message_bytes)
-                    for b in get_file_chunks(file, signal=signal): 
+                    with open(file, 'wb') as f:
+                        f.write(message_bytes)
+                    for b in get_file_chunks(file, signal=signal):
                         signal.wait()
                         try:
                             yield b
@@ -143,6 +152,12 @@ def serialize_to_buffer(message_iterator, signal = Signal(exist=False), cache_di
                         os.remove(file)
                         gc.collect()
                     except: pass
+
+                try:
+                    yield gateway_pb2.Buffer(
+                        separator = True
+                    )
+                finally: signal.wait()
 
 def client_grpc(method, output_field = None, input=None, timeout=None, indices_parser: dict = None, indices_serializer: dict = None): # indice: method
     signal = Signal()
@@ -159,7 +174,7 @@ def client_grpc(method, output_field = None, input=None, timeout=None, indices_p
                                 ),
                                 timeout = timeout
                             ),
-            message_field = output_field,  # TODO ????
+            message_field = output_field,
             signal = signal,
             indices = indices_parser
         ): yield b

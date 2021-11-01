@@ -1,7 +1,7 @@
 from time import sleep
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2_grpc, api_pb2, celaut_pb2
 
-from main import GATEWAY, WALL, RANDOM, client_grpc
+from main import GATEWAY, SHA3_256, WALL, RANDOM, client_grpc
 from gateway_pb2_grpc_indices import StartService_indices
 
 def service_extended(hash):
@@ -9,20 +9,16 @@ def service_extended(hash):
     any.ParseFromString(open('__registry__/'+hash, 'rb').read())
 
     config = True
-    for hash in any.metadata.hashtag.hash:
+    for h in any.metadata.hashtag.hash:
         if config:  # Solo hace falta enviar la configuracion en el primer paquete.
             config = False
             yield gateway_pb2.HashWithConfig(
-                hash = hash,
+                hash = h,
                 config = celaut_pb2.Configuration()
             )
-        yield hash
+        yield h
 
-    if config: yield gateway_pb2.ServiceWithConfig(
-        service = any,
-        config = celaut_pb2.Configuration()
-    )
-    else: yield any
+
 
 def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
     for slot in instance.api.slot:
@@ -37,26 +33,29 @@ def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
 g_stub = gateway_pb2_grpc.GatewayStub(
     grpc.insecure_channel(GATEWAY + ':8080'),
 )
+import os, psutil, gc
+for i in range(1, 10):
+    process = psutil.Process(os.getpid())
+    start_mem = process.memory_info().rss  # in bytes 
+    # Get solver cnf
+    solver = next(client_grpc(
+        method=g_stub.StartService,
+        output_field=gateway_pb2.Instance,
+        input=service_extended(hash=WALL),
+        indices_serializer=StartService_indices
+    ))
 
-
-# Get solver cnf
-print('\n\nGet new services....')
-solver = next(client_grpc(
-    method=g_stub.StartService,
-    output_field=gateway_pb2.Instance,
-    input=service_extended(hash=WALL),
-    indices_serializer=StartService_indices
-))
-
-uri = get_grpc_uri(solver.instance)
-solver_stub = api_pb2_grpc.SolverStub(
-    grpc.insecure_channel(
-        uri.ip + ':' + str(uri.port)
+    uri = get_grpc_uri(solver.instance)
+    solver_stub = api_pb2_grpc.SolverStub(
+        grpc.insecure_channel(
+            uri.ip + ':' + str(uri.port)
+        )
     )
-)
-solver_token = solver.token
+    solver_token = solver.token
 
-print(' SOLVER SERVICE -> ', uri)
+    print('\n\n memory usage -> ', process.memory_info().rss - start_mem)
+    print(' SOLVER SERVICE -> ', uri)
+    sleep(10) 
 
 
 
