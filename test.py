@@ -1,7 +1,7 @@
 from time import sleep
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2_grpc, api_pb2, celaut_pb2
 
-from main import GATEWAY, SHA3_256, WALL, RANDOM, client_grpc
+from main import FRONTIER, GATEWAY, RANDOM, client_grpc
 from gateway_pb2_grpc_indices import StartService_indices
 
 def service_extended(hash):
@@ -33,15 +33,15 @@ def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
 g_stub = gateway_pb2_grpc.GatewayStub(
     grpc.insecure_channel(GATEWAY + ':8080'),
 )
-import os, psutil, gc
-for i in range(1, 10):
-    process = psutil.Process(os.getpid())
-    start_mem = process.memory_info().rss  # in bytes 
-    # Get solver cnf
+import os, psutil
+process = psutil.Process(os.getpid())
+start_mem = process.memory_info().rss  # in bytes 
+# Get solver cnf
+for i in range(10):
     solver = next(client_grpc(
         method=g_stub.StartService,
         output_field=gateway_pb2.Instance,
-        input=service_extended(hash=WALL),
+        input=service_extended(hash=FRONTIER),
         indices_serializer=StartService_indices
     ))
 
@@ -55,41 +55,42 @@ for i in range(1, 10):
 
     print('\n\n memory usage -> ', process.memory_info().rss - start_mem)
     print(' SOLVER SERVICE -> ', uri)
-    sleep(10) 
 
 
 
-# Get random cnf
-print('\n\nGet new services....')
-random = next(client_grpc(
-    method = g_stub.StartService,
-    output_field=gateway_pb2.Instance,
-    input=service_extended(hash=RANDOM),
-    indices_serializer=StartService_indices
-))
+    # Get random cnf
+    print('\n\nGet new services....')
+    random = next(client_grpc(
+        method = g_stub.StartService,
+        output_field=gateway_pb2.Instance,
+        input=service_extended(hash=RANDOM),
+        indices_serializer=StartService_indices
+    ))
 
-uri = get_grpc_uri(random.instance)
-random_stub = api_pb2_grpc.RandomStub(
-    grpc.insecure_channel(
-        uri.ip + ':' + str(uri.port)
+    uri = get_grpc_uri(random.instance)
+    random_stub = api_pb2_grpc.RandomStub(
+        grpc.insecure_channel(
+            uri.ip + ':' + str(uri.port)
+        )
     )
-)
-random_token = random.token
+    random_token = random.token
 
-print(' RANDOM SERVICE -> ', uri)
-sleep(1)
-cnf = next(client_grpc(
-    method=random_stub.RandomCnf,
-    input = api_pb2.Empty(),
-    output_field=api_pb2.Cnf
-))
 
-print('CNF -> ', cnf)
+    for i in range(10):
+        print(' RANDOM SERVICE -> ', uri)
+        sleep(1)
+        cnf = next(client_grpc(
+            method=random_stub.RandomCnf,
+            input = api_pb2.Empty(),
+            output_field=api_pb2.Cnf
+        ))
 
-interpretation  = next(client_grpc(
-    method=solver_stub.Solve,
-    input=cnf,
-    output_field=api_pb2.Interpretation
-))
+        print('CNF -> ', cnf)
 
-print('Interpretation -> ', interpretation)
+        interpretation  = next(client_grpc(
+            method=solver_stub.Solve,
+            input=cnf,
+            output_field=api_pb2.Interpretation
+        ))
+
+        print('Interpretation -> ', interpretation)

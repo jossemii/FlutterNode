@@ -1,7 +1,7 @@
-RANDOM = '0a8f63bfc040dee78ce75f566cebd79ba6a95105653e4a83f44293b1c54a25e3'
-FRONTIER = '921e3910a78f345fa0a7924e5f44fd65fe87b6431df4b0b6dce9fb9c6df3155a'
-WALL = '52e760af042a8014a8b07bf6a4586991a09e58bf8f7117462fc25e73f546f30d'
-WALK = '22a0bd5d09cc5ee6ceed3cca5b8515b9f0bcb22d297603b6177c75bd5b473cee'
+RANDOM = '16426da109eed68c89bf32bcbcab208649f01d608116f1dda15e12d55fc95456'
+FRONTIER = '66a6b7547e29745cdf77cd365072cf08ed6e4edaf32a8fa0976dcd194f1c90a5'
+WALL = '47744b30d73d12235f80be88e6e665d5f2d4784f9ca90a12bc9e002633fd9b3e'
+WALK = '60610f898fc859ca133cb971e9fd757fbf40513e60eee0a0f937994781922cdd'
 LISIADO_UNDER = ''
 LISIADO_OVER = ''
 
@@ -13,13 +13,14 @@ TEQUILA = '192.168.1.63'
 GATEWAY = MOJITO
 
 def generator(hash: str):
-    yield gateway_pb2.ServiceTransport(
+    yield gateway_pb2.HashWithConfig(
         hash = gateway_pb2.celaut__pb2.Any.Metadata.HashTag.Hash(
             type = bytes.fromhex(SHA3_256),
             value = bytes.fromhex(hash)
         ),
         config = gateway_pb2.celaut__pb2.Configuration()
     )
+    yield ('__registry__/' + hash, gateway_pb2.celaut__pb2.Any)
 
 # GrpcBigBuffer.
 CHUNK_SIZE = 1024 * 1024  # 1MB
@@ -98,7 +99,7 @@ def parse_from_buffer(request_iterator, message_field = None, signal = Signal(ex
             yield all_buffer
 
 def serialize_to_buffer(message_iterator, signal = Signal(exist=False), cache_dir = None, indices: dict = None): # method: indice
-    if not hasattr(message_iterator, '__iter__'): message_iterator=[message_iterator]
+    if not hasattr(message_iterator, '__iter__') or type(message_iterator) is tuple: message_iterator=[message_iterator]
     for message in message_iterator:
         if type(message) is tuple:
             try:

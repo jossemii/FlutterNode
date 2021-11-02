@@ -1,6 +1,4 @@
-from os import abort
-from types import CellType
-from celaut_pb2 import Service
+from gateway_pb2_grpc_indices import StartService_indices
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2
 from time import sleep, time
 
@@ -23,8 +21,9 @@ print('Tenemos clasificador. ', c_stub)
 # Get random cnf
 random_cnf_service = next(client_grpc(
     method = g_stub.StartService,
-    output_field=gateway_pb2.Instance,
-    input=generator(hash=RANDOM)
+    output_field = gateway_pb2.Instance,
+    input = generator(hash = RANDOM),
+    indices_serializer = StartService_indices
 ))
 
 print(random_cnf_service)
@@ -50,7 +49,7 @@ except Exception as e:
     print('No tenemos dataset.')
     pass
 
-if input("\nGo to train? (y/n)")=='y':
+if True:#if input("\nGo to train? (y/n)")=='y':
     print('Iniciando entrenamiento...')
     # Inicia el entrenamiento.
     next(client_grpc(
@@ -62,16 +61,9 @@ if input("\nGo to train? (y/n)")=='y':
     # Añade solvers.
     for s in [FRONTIER, WALL, WALK]:
         print('     ', s)
-        any = api_pb2.celaut__pb2.Any()
-        any.ParseFromString(open('__registry__/'+s, 'rb').read())
-        service = api_pb2.celaut__pb2.Service()
-        service.ParseFromString(any.value)
         next(client_grpc(
-            method=c_stub.UploadSolver,
-            input=api_pb2.ServiceWithMeta(
-                    meta = any.metadata,
-                    service = service
-                )
+            method = c_stub.UploadSolver,
+            input = ('__registry__/'+s, gateway_pb2.celaut__pb2.Any)
         ))
 
 
