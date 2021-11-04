@@ -1,4 +1,4 @@
-from gateway_pb2_grpc_indices import StartService_indices
+from gateway_pb2_grpcbf import StartService_input
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2
 from time import sleep, time
 
@@ -23,7 +23,7 @@ random_cnf_service = next(client_grpc(
     method = g_stub.StartService,
     output_field = gateway_pb2.Instance,
     input = generator(hash = RANDOM),
-    indices_serializer = StartService_indices
+    indices_serializer = StartService_input
 ))
 
 print(random_cnf_service)

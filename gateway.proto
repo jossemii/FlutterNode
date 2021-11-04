@@ -19,15 +19,20 @@ message Instance {
 }
 
 
-// ( celaut.Any.Metadata.HashTag.Hash=H, celaut.Any=S, celaut.Configuration=C; { H v S v H^C v S^C } )
-message HashWithConfig { // H^C 
+
+
+// H^C 
+message HashWithConfig { 
     celaut.Any.Metadata.HashTag.Hash hash = 1;
     celaut.Configuration config = 3;  
 }
-message ServiceWithConfig { // S^C
+
+// S^C
+message ServiceWithConfig { 
     celaut.Any service = 2;
     celaut.Configuration config = 3;
 }
+
 
 // GRPC.
 message Buffer  {
