@@ -1,6 +1,6 @@
 # GrpcBigBuffer.
 CHUNK_SIZE = 1024 * 1024  # 1MB
-import os, shutil, gc
+import os, shutil, gc, itertools
 import gateway_pb2
 from random import randint, random
 from typing import Generator
@@ -42,38 +42,118 @@ def get_file_chunks(filename, signal = Signal(exist=False)) -> Generator[gateway
     finally: 
         gc.collect()
 
-def save_chunks_to_file(buffer_iterator, filename):
+def save_chunks_to_file(buffer_iterator, filename, signal):
+    signal.wait()
     with open(filename, 'wb') as f:
+        signal.wait()
         f.write(''.join([buffer.chunk for buffer in buffer_iterator]))
 
-def parse_from_buffer(request_iterator, message_field = None, signal = Signal(exist=False), indices: dict = None): # indice: method
-    if indices and len(indices) == 1: message_field = list(indices.values())[0]
-    while True:
-        all_buffer = bytes()
+def parse_from_buffer(request_iterator, message_field_or_route = None, signal = Signal(exist=False), indices: dict = None, partitions: dict = None): # indice: method
+    def parser_iterator(request_iterator, signal: Signal) -> Generator[bytes, None, None]:
         while True:
+            signal.wait()
             buffer = next(request_iterator)
-            # The order of conditions is important.
-            if buffer.HasField('head'):
-                try:
-                    message_field = indices[buffer.head]
-                except: pass
             if buffer.HasField('chunk'):
-                all_buffer += buffer.chunk
+                yield buffer.chunk
             if buffer.HasField('signal') and buffer.signal:
                 signal.change()
-                continue
             if buffer.HasField('separator') and buffer.separator: 
                 break
-        if message_field:
-            message = message_field()
-            message.ParseFromString(
-                all_buffer
-            )
-            yield message
-        else:
-            yield all_buffer
 
-def serialize_to_buffer(message_iterator, signal = Signal(exist=False), cache_dir = None, indices: dict = None, mem_manager = lambda len: None) -> Generator[gateway_pb2.Buffer, None, None]: # method: indice
+    def parse_message(message_field, request_iterator, signal):
+        all_buffer = bytes()
+        for b in parser_iterator(
+            request_iterator=request_iterator,
+            signal=signal,
+        ):
+            all_buffer += b
+        message = message_field()
+        message.ParseFromString(
+            all_buffer
+        )
+        return message
+
+    def save_to_file(filename: str, request_iterator, signal):
+        save_chunks_to_file(
+            filename = filename,
+            buffer_iterator = parser_iterator(
+                request_iterator = request_iterator,
+                signal = signal,
+            ),
+            signal = signal,
+        )
+    
+    def iterate_partition(message_field_or_route, signal, request_iterator):
+        if message_field_or_route and type(message_field_or_route) is not str:
+            yield parse_message(
+                message_field = message_field_or_route,
+                request_iterator = request_iterator,
+                signal=signal,
+            )
+
+        elif message_field_or_route:
+            save_to_file(
+                request_iterator = request_iterator,
+                filename = message_field_or_route,
+                signal = signal
+            )
+            yield None
+
+        else: 
+            for b in parser_iterator(
+                request_iterator = request_iterator,
+                signal = signal
+            ): yield b
+    
+    def iterate_partitions(partitions: list, signal: Signal, request_iterator):
+        for partition in partitions:
+            for b in iterate_partition(
+                message_field_or_route = partition, 
+                signal = signal,
+                request_iterator = request_iterator
+                ): yield b
+
+    if indices and len(indices) == 1: message_field_or_route = list(indices.values())[0]
+    while True:
+        buffer = next(request_iterator)
+        # The order of conditions is important.
+        if buffer.HasField('head'):
+            try:
+                if buffer.head in partitions:
+                    for b in iterate_partitions(
+                        partitions = partitions[buffer.head],
+                        signal = signal,
+                        request_iterator = itertools.chain(buffer, request_iterator)
+                    ): yield b
+                else:
+                    yield parse_message(
+                        message_field = indices[buffer.head],
+                        request_iterator = itertools.chain(buffer, request_iterator),
+                        signal = signal,
+                    )
+            except: pass
+            
+        elif partitions and len(partitions) == 1:
+            for b in iterate_partitions(
+                partitions = list(partitions.values())[0],
+                signal = signal,
+                request_iterator = itertools.chain(buffer, request_iterator),
+            ): yield b
+
+        else:
+            for b in iterate_partition(
+                message_field_or_route = message_field_or_route,
+                signal = signal,
+                request_iterator = itertools.chain(buffer, request_iterator),
+            ): yield b
+
+def serialize_to_buffer(
+        message_iterator, 
+        signal = Signal(exist=False), 
+        cache_dir = None, 
+        indices: dict = None, 
+        mem_manager = lambda len: None
+    ) -> Generator[gateway_pb2.Buffer, None, None]:  # method: indice
     def send_file(filename: str, signal: Signal) -> Generator[gateway_pb2.Buffer, None, None]:
         for b in get_file_chunks(
                 filename=filename, 
@@ -87,7 +167,12 @@ def serialize_to_buffer(message_iterator, signal = Signal(exist=False), cache_di
             separator = True
         )
 
-    def send_message(signal: Signal, message: object, head: int = None, mem_manager = lambda len: None) -> Generator[gateway_pb2.Buffer, None, None]:
+    def send_message(
+            signal: Signal, 
+            message: object, 
+            head: int = None, 
+            mem_manager = lambda len: None
+        ) -> Generator[gateway_pb2.Buffer, None, None]:
         message_bytes = message.SerializeToString()
         if len(message_bytes) < CHUNK_SIZE:
             signal.wait()
@@ -166,7 +251,7 @@ def serialize_to_buffer(message_iterator, signal = Signal(exist=False), cache_di
                 mem_manager=mem_manager
             ): yield b
 
-def client_grpc(method, output_field = None, input=None, timeout=None, indices_parser: dict = None, indices_serializer: dict = None, mem_manager = lambda len: None): # indice: method
+def client_grpc(method, output_field_or_route = None, input=None, timeout=None, indices_parser: dict = None, indices_serializer: dict = None, mem_manager = lambda len: None): # indice: method
     signal = Signal()
     cache_dir = os.path.abspath(os.curdir) + '/__hycache__/grpcbigbuffer' + str(randint(1,999)) + '/'
     os.mkdir(cache_dir)
@@ -174,7 +259,7 @@ def client_grpc(method, output_field = None, input=None, timeout=None, indices_p
         for b in parse_from_buffer(
             request_iterator = method(
                                 serialize_to_buffer(
-                                    input if input else '',
+                                    message_iterator = input if input else '',
                                     signal = signal,
                                     cache_dir = cache_dir,
                                     indices = indices_serializer,
@@ -182,7 +267,7 @@ def client_grpc(method, output_field = None, input=None, timeout=None, indices_p
                                 ),
                                 timeout = timeout
                             ),
-            message_field = output_field,
+            message_field_or_route = output_field_or_route,
             signal = signal,
             indices = indices_parser
         ): yield b

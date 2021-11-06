@@ -63,7 +63,7 @@ if True:#if input("\nGo to train? (y/n)")=='y':
         print('     ', s)
         next(client_grpc(
             method = c_stub.UploadSolver,
-            input = ('__registry__/'+s, gateway_pb2.celaut__pb2.Any)
+            input = ('__registry__/'+s, gateway_pb2.celaut__pb2.Any) # TODO
         ))
 
 

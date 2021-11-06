@@ -12,6 +12,8 @@ MOJITO = '192.168.1.143'
 TEQUILA = '192.168.1.63'
 GATEWAY = MOJITO
 
+import gateway_pb2
+
 def generator(hash: str):
     yield gateway_pb2.HashWithConfig(
         hash = gateway_pb2.celaut__pb2.Any.Metadata.HashTag.Hash(
@@ -20,4 +22,10 @@ def generator(hash: str):
         ),
         config = gateway_pb2.celaut__pb2.Configuration()
     )
-    yield ('__registry__/' + hash, gateway_pb2.celaut__pb2.Any)
+    
+    # Get the two partitions of the Service with metadata.
+    yield (
+        gateway_pb2.celaut__pb2.Any, 
+        '__registry__/' + hash + '/p1',
+        '__registry__/' + hash + '/p2',
+    )
