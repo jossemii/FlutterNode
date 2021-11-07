@@ -8,7 +8,7 @@ StartService_input_indices = {
     4 : gateway_pb2.ServiceWithConfig
 }
 
-StartService_input_partitions = {
+StartService_input_partitions = {  # Marcamos como tratamos cada particion desde este lado, no que particiones hay.
     2 : [gateway_pb2.celaut__pb2.Any, ''],
     4 : [gateway_pb2.ServiceWithConfig, '']
 }

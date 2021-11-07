@@ -48,7 +48,14 @@ def save_chunks_to_file(buffer_iterator, filename, signal):
         signal.wait()
         f.write(''.join([buffer.chunk for buffer in buffer_iterator]))
 
-def parse_from_buffer(request_iterator, message_field_or_route = None, signal = Signal(exist=False), indices: dict = None, partitions: dict = None): # indice: method
+def parse_from_buffer(
+        request_iterator,
+        message_field_or_route = None, 
+        signal = Signal(exist=False), 
+        indices: dict = None,
+        partitions: dict = None,
+        cache_dir: str = os.path.abspath(os.curdir) + '/__hycache__/grpcbigbuffer' + str(randint(1,999)) + '/',
+    ): # indice: method
     def parser_iterator(request_iterator, signal: Signal) -> Generator[bytes, None, None]:
         while True:
             signal.wait()
@@ -73,7 +80,7 @@ def parse_from_buffer(request_iterator, message_field_or_route = None, signal = 
         )
         return message
 
-    def save_to_file(filename: str, request_iterator, signal):
+    def save_to_file(filename: str, request_iterator, signal) -> str:
         save_chunks_to_file(
             filename = filename,
             buffer_iterator = parser_iterator(
@@ -82,8 +89,9 @@ def parse_from_buffer(request_iterator, message_field_or_route = None, signal = 
             ),
             signal = signal,
         )
+        return filename
     
-    def iterate_partition(message_field_or_route, signal, request_iterator):
+    def iterate_partition(message_field_or_route, signal: Signal, request_iterator, filename: str):
         if message_field_or_route and type(message_field_or_route) is not str:
             yield parse_message(
                 message_field = message_field_or_route,
@@ -92,12 +100,11 @@ def parse_from_buffer(request_iterator, message_field_or_route = None, signal = 
             )
 
         elif message_field_or_route:
-            save_to_file(
+            yield save_to_file(
                 request_iterator = request_iterator,
-                filename = message_field_or_route,
+                filename = filename,
                 signal = signal
             )
-            yield None
 
         else: 
             for b in parser_iterator(
@@ -105,12 +112,13 @@ def parse_from_buffer(request_iterator, message_field_or_route = None, signal = 
                 signal = signal
             ): yield b
     
-    def iterate_partitions(partitions: list, signal: Signal, request_iterator):
-        for partition in partitions:
+    def iterate_partitions(partitions: list, signal: Signal, request_iterator, cache_dir: str):
+        for i, partition in enumerate(partitions):
             for b in iterate_partition(
-                message_field_or_route = partition, 
-                signal = signal,
-                request_iterator = request_iterator
+                    message_field_or_route = partition, 
+                    signal = signal,
+                    request_iterator = request_iterator,
+                    filename = cache_dir + 'p'+str(i),
                 ): yield b
 
     if indices and len(indices) == 1: message_field_or_route = list(indices.values())[0]
@@ -123,7 +131,8 @@ def parse_from_buffer(request_iterator, message_field_or_route = None, signal = 
                     for b in iterate_partitions(
                         partitions = partitions[buffer.head],
                         signal = signal,
-                        request_iterator = itertools.chain(buffer, request_iterator)
+                        request_iterator = itertools.chain(buffer, request_iterator),
+                        cache_dir = cache_dir,
                     ): yield b
                 else:
                     yield parse_message(
@@ -138,6 +147,7 @@ def parse_from_buffer(request_iterator, message_field_or_route = None, signal = 
                 partitions = list(partitions.values())[0],
                 signal = signal,
                 request_iterator = itertools.chain(buffer, request_iterator),
+                cache_dir = cache_dir,
             ): yield b
 
         else:
@@ -145,12 +155,13 @@ def parse_from_buffer(request_iterator, message_field_or_route = None, signal = 
                 message_field_or_route = message_field_or_route,
                 signal = signal,
                 request_iterator = itertools.chain(buffer, request_iterator),
+                filename = cache_dir + 'p1',
             ): yield b
 
 def serialize_to_buffer(
         message_iterator, 
         signal = Signal(exist=False), 
-        cache_dir = None, 
+        cache_dir: str = os.path.abspath(os.curdir) + '/__hycache__/grpcbigbuffer' + str(randint(1,999)) + '/', 
         indices: dict = None, 
         mem_manager = lambda len: None
     ) -> Generator[gateway_pb2.Buffer, None, None]:  # method: indice
@@ -171,7 +182,8 @@ def serialize_to_buffer(
             signal: Signal, 
             message: object, 
             head: int = None, 
-            mem_manager = lambda len: None
+            mem_manager = lambda len: None,
+            cache_dir: str= None, 
         ) -> Generator[gateway_pb2.Buffer, None, None]:
         message_bytes = message.SerializeToString()
         if len(message_bytes) < CHUNK_SIZE:
@@ -236,7 +248,8 @@ def serialize_to_buffer(
                     for b in send_message(
                         signal=signal,
                         message=partition,
-                        mem_manager=mem_manager
+                        mem_manager=mem_manager,
+                        cache_dir = cache_dir,
                     ): yield b
 
         else:  # If message is a protobuf object.
@@ -248,7 +261,8 @@ def serialize_to_buffer(
                 signal=signal,
                 message=message,
                 head=head,
-                mem_manager=mem_manager
+                mem_manager=mem_manager,
+                cache_dir = cache_dir,
             ): yield b
 
 def client_grpc(method, output_field_or_route = None, input=None, timeout=None, indices_parser: dict = None, indices_serializer: dict = None, mem_manager = lambda len: None): # indice: method
