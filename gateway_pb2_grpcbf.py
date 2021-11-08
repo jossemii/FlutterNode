@@ -1,17 +1,65 @@
-import gateway_pb2
+import gateway_pb2, api_pb2
 
 # This is part of the transport protocol (slot) data.
-StartService_input_indices = {
+StartService_input = {
     1 : gateway_pb2.celaut__pb2.Any.Metadata.HashTag.Hash,
     2 : gateway_pb2.celaut__pb2.Any,
     3 : gateway_pb2.HashWithConfig,
     4 : gateway_pb2.ServiceWithConfig
 }
 
-StartService_input_partitions = {  # Marcamos como tratamos cada particion desde este lado, no que particiones hay.
-    2 : [gateway_pb2.celaut__pb2.Any, ''],
-    4 : [gateway_pb2.ServiceWithConfig, '']
+StartService_input_partitions = {
+    2 : [
+            api_pb2.Buffer.Head.Partition(index={
+                1 : api_pb2.Buffer.Head.Partition(),
+                2 : api_pb2.Buffer.Head.Partition(index={
+                    1 : api_pb2.Buffer.Head.Partition(index={
+                        3 : api_pb2.Buffer.Head.Partition(),
+                        4 : api_pb2.Buffer.Head.Partition(),
+                    }),
+                    2 : api_pb2.Buffer.Head.Partition(),
+                    3 : api_pb2.Buffer.Head.Partition(),
+                    4 : api_pb2.Buffer.Head.Partition(),
+                })
+            }),
+            api_pb2.Buffer.Head.Partition(index={
+                2 : api_pb2.Buffer.Head.Partition(index={
+                    1 : api_pb2.Buffer.Head.Partition(index={
+                        1 : api_pb2.Buffer.Head.Partition(),
+                        2 : api_pb2.Buffer.Head.Partition()
+                    }),
+                })
+            })
+        ],
+    4 : [
+            api_pb2.Buffer.Head.Partition(index={
+                2 : api_pb2.Buffer.Head.Partition(index={
+                    1 : api_pb2.Buffer.Head.Partition(),
+                    2 : api_pb2.Buffer.Head.Partition(index={
+                        1 : api_pb2.Buffer.Head.Partition(index={
+                            3 : api_pb2.Buffer.Head.Partition(),
+                            4 : api_pb2.Buffer.Head.Partition(),
+                        }),
+                        2 : api_pb2.Buffer.Head.Partition(),
+                        3 : api_pb2.Buffer.Head.Partition(),
+                        4 : api_pb2.Buffer.Head.Partition(),
+                    })
+                }),
+                3 : api_pb2.Buffer.Head.Partition()
+            }),
+            api_pb2.Buffer.Head.Partition(index={
+                2 : api_pb2.Buffer.Head.Partition(index={
+                    2 : api_pb2.Buffer.Head.Partition(index={
+                        1 : api_pb2.Buffer.Head.Partition(index={
+                            1 : api_pb2.Buffer.Head.Partition(),
+                            2 : api_pb2.Buffer.Head.Partition()
+                        }),
+                    })
+                })
+            })
+        ]
 }
+
 
 """
     // ( celaut.Any.Metadata.HashTag.Hash=H, celaut.Any=S, celaut.Configuration=C; { H v S v H^C v S^C } )
