@@ -1,7 +1,8 @@
 from time import sleep
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2_grpc, api_pb2, celaut_pb2
 
-from main import FRONTIER, GATEWAY, RANDOM, client_grpc
+from main import FRONTIER, GATEWAY, RANDOM
+from grpcbifbuffer import client_grpc
 from gateway_pb2_grpc_indices import StartService_indices
 
 def service_extended(hash):
@@ -82,7 +83,8 @@ for i in range(10):
         cnf = next(client_grpc(
             method=random_stub.RandomCnf,
             input = api_pb2.Empty(),
-            output_field=api_pb2.Cnf
+            output_field=api_pb2.Cnf,
+            mem_manager = lambda len: None,
         ))
 
         print('CNF -> ', cnf)
