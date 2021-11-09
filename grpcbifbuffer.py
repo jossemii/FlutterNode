@@ -125,14 +125,16 @@ def parse_from_buffer(
                 ): yield b
 
     def conversor(
-            iterator, 
+            iterator,
+            indices: dict,
             signal: Signal, 
             pf_object: object = None, 
             local_partitions_model: list = [], 
             remote_partitions_model: list = [], 
             mem_manager = lambda len: None, 
             yield_remote_partition_dir: bool = False, 
-            cache_dir: str = None
+            cache_dir: str = None,
+            partitions_message_mode: dict = {},
         ):
         dirs = []
         # 1. Save the remote partitions on cache.
@@ -143,8 +145,8 @@ def parse_from_buffer(
 
         if not pf_object or len(dirs) != len(remote_partitions_model): return None
         # 3. Parse to the local partitions from the remote partitions using mem_manager.
-        with mem_manager(len=2*sum([os.path.getsize(dir) for dir in dirs])):
-            main_o = pf_object()
+        with mem_manager(len = 2*sum([os.path.getsize(dir) for dir in dirs])):
+            main_object = pf_object()
             for i, d in enumerate(dirs):
                 # Get the partition
                 partition = remote_partitions_model[i]
@@ -154,17 +156,33 @@ def parse_from_buffer(
                     return recursive(
                         aux_object = eval(aux_object.DESCRIPTOR.fields_by_number[list(partition.index.keys())[0]].message_type.full_name), 
                         partition = list(partition.index.values())[0]
-                        ) if partition.HasField('index') and len(partition.index) == 1 else aux_object()
-
+                        ) if partition.HasField('index') and len(partition.index) == 1 else aux_object() 
                 aux_object = recursive(partition = partition, aux_object = pf_object)
+
                 # Parse buffer to it.
                 try:
                     aux_object.ParseFromString(open(d, 'rb').read())
                 except: return None
 
-                main_o.MergeFrom() # TODO
+                main_object.MergeFrom(aux_object)
 
         # 4. yield local partitions.
+        for b in parse_from_buffer(
+            request_iterator = serialize_to_buffer(
+                                    signal = signal,
+                                    cache_dir = cache_dir,
+                                    partitions_model = local_partitions_model,
+                                    mem_manager = mem_manager,
+                                    indices = indices,
+                                ),
+            signal = signal,
+            indices = indices,
+            cache_dir = cache_dir,
+            mem_manager = mem_manager,
+            partitions_model = local_partitions_model,
+            partitions_message_mode = partitions_message_mode,
+        ): yield b
+
 
     while True:
         buffer = next(request_iterator)
@@ -186,11 +204,14 @@ def parse_from_buffer(
                             request_iterator = itertools.chain(buffer, request_iterator),
                             cache_dir = cache_dir + 'remote/'
                         ),
+                        indices = indices,
+                        cache_dir = cache_dir,
                         local_partitions_model = partitions_model[buffer.head.index] if len(partitions_model) >= buffer.head.index else [None],
                         remote_partitions_model = buffer.head.partitions,
                         mem_manager = mem_manager,
                         yield_remote_partition_dir = yield_remote_partition_dir,
                         pf_object = list(indices.values())[buffer.head.index] if buffer.head.index in indices else None,
+                        partitions_message_mode = partitions_message_mode,
                     ): yield b
 
                 elif len(partitions_model) >= buffer.head.index and partitions_model[buffer.head.index] and len(partitions_model[buffer.head.index]) > 1:
@@ -218,11 +239,14 @@ def parse_from_buffer(
                         request_iterator = itertools.chain(buffer, request_iterator),
                         filename = cache_dir + 'remote/p1',
                     ),
+                    indices = indices,
                     remote_partitions_model = [None],
                     local_partitions_model = partitions_model[buffer.head.index] if len(partitions_model) >= buffer.head.index else [None],
                     mem_manager = mem_manager,
                     yield_remote_partition_dir = yield_remote_partition_dir,
                     pf_object = list(indices.values())[1],
+                    cache_dir = cache_dir,
+                    partitions_message_mode = partitions_message_mode,
                 ): yield b
             else:
                 for b in iterate_partition(
