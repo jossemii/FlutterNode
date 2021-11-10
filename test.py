@@ -2,8 +2,8 @@ from time import sleep
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2_grpc, api_pb2, celaut_pb2
 
 from main import FRONTIER, GATEWAY, RANDOM
-from grpcbifbuffer import client_grpc
-from gateway_pb2_grpc_indices import StartService_indices
+from grpcbigbuffer import client_grpc
+from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions
 
 def service_extended(hash):
     any = api_pb2.celaut__pb2.Any()
@@ -43,7 +43,7 @@ for i in range(10):
         method=g_stub.StartService,
         output_field=gateway_pb2.Instance,
         input=service_extended(hash=FRONTIER),
-        indices_serializer=StartService_indices
+        indices_serializer=StartService_input
     ))
 
     uri = get_grpc_uri(solver.instance)
@@ -63,9 +63,10 @@ for i in range(10):
     print('\n\nGet new services....')
     random = next(client_grpc(
         method = g_stub.StartService,
-        output_field=gateway_pb2.Instance,
-        input=service_extended(hash=RANDOM),
-        indices_serializer=StartService_indices
+        output_field = gateway_pb2.Instance,
+        input = service_extended(hash=RANDOM),
+        indices_serializer = StartService_input,
+        partitions_serializer = StartService_input_partitions
     ))
 
     uri = get_grpc_uri(random.instance)
