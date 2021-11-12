@@ -18,8 +18,10 @@ def service_extended(hash):
                 config = celaut_pb2.Configuration()
             )
         yield h
-
-
+    yield gateway_pb2.ServiceWithConfig(
+        value = any.value,
+        metadata = any.metadata
+    )
 
 def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
     for slot in instance.api.slot:
