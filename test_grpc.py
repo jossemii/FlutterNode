@@ -10,16 +10,18 @@ g_stub = gateway_pb2_grpc.GatewayStub(
 )
 
 # Get solver cnf
-for m in client_grpc(
-    method=g_stub.StartService,
-    partitions_message_mode_parser=True,
-    indices_parser=gateway_pb2.Instance,
-    yield_remote_partition_dir_on_serializer=True,
-    partitions_parser=[
-        buffer_pb2.Buffer.Head.Partition(index={1: buffer_pb2.Buffer.Head.Partition(), 2: buffer_pb2.Buffer.Head.Partition()}),
-        buffer_pb2.Buffer.Head.Partition(index={3: buffer_pb2.Buffer.Head.Partition()}),
-    ],
-    input=gateway_pb2.TokenMessage(token='adkfn')
+try:
+    for m in client_grpc(
+        method=g_stub.StartService,
+        partitions_message_mode_parser=True,
+        indices_parser=gateway_pb2.Instance,
+        yield_remote_partition_dir_on_serializer=False,
+        partitions_parser=[
+            buffer_pb2.Buffer.Head.Partition(index={1: buffer_pb2.Buffer.Head.Partition(), 2: buffer_pb2.Buffer.Head.Partition()}),
+            buffer_pb2.Buffer.Head.Partition(index={3: buffer_pb2.Buffer.Head.Partition()}),
+        ],
+        input=gateway_pb2.TokenMessage(token='adkfn')
 
-): 
-    print('message --> ', m)
+    ): 
+        print('message --> ', m)
+except Exception as e: print(e)

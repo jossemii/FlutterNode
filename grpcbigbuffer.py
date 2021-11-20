@@ -11,14 +11,30 @@ from random import randint
 from typing import Generator, Union
 from threading import Condition
 
+
+class CacheDir(type):
+    # Using singleton pattern
+    _instances = {}
+    cache_dir = os.path.abspath(os.curdir) + '/__cache__/'
+
+    def __call__(cls):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(CacheDir, cls).__call__()
+        return cls._instances[cls]
+
+def modify_cache_dir(cache_dir: str):
+    CacheDir.cache_dir = cache_dir
+
+def generate_random_dir(dir: str) -> str:
+    return dir + str(randint(1, MAX_DIR)) + '/'
+
 def create_cache_dir() -> str: 
-    cache_dir = os.path.abspath(os.curdir) + '__cache__/'
-    # TODO change the default for all calls.
+    cache_dir = CacheDir.cache_dir
     try:
         os.mkdir(cache_dir)
     except FileExistsError: pass
     while True:
-        random_dir = 'grpcbigbuffer' + str(randint(1, MAX_DIR)) + '/'
+        random_dir = generate_random_dir(dir='grpcbigbuffer')
         try:
             os.mkdir(cache_dir+random_dir)
             return cache_dir+random_dir
@@ -80,12 +96,13 @@ def parse_from_buffer(
         indices: Union[protobuf.pyext.cpp_message.GeneratedProtocolMessageType, dict] = {}, # indice: method      message_field = None,
         partitions_model: Union[list, dict] = [buffer_pb2.Buffer.Head.Partition()],
         partitions_message_mode: Union[bool, list, dict] = False,  # Write on disk by default.
-        cache_dir: str = create_cache_dir(),
+        cache_dir: str = None,
         mem_manager = lambda len: MemManager(len=len),
         yield_remote_partition_dir: bool = False,
     ): 
     try:
         try:
+            if not cache_dir: cache_dir = create_cache_dir()
             if type(indices) is protobuf.pyext.cpp_message.GeneratedProtocolMessageType: indices = {1: indices}
             if type(indices) is not dict: raise Exception
 
@@ -98,7 +115,7 @@ def parse_from_buffer(
                 else:
                     partitions_model.update({i: [buffer_pb2.Buffer.Head.Partition()]})
 
-            if type(partitions_message_mode) is bool: 
+            if type(partitions_message_mode) is bool:
                 partitions_message_mode = {i: [partitions_message_mode for m in l] for i, l in partitions_model.items()} # The same mode for all index and partitions.
             if type(partitions_message_mode) is list: partitions_message_mode = {1: partitions_message_mode} # Only've one index.
             for i, l in partitions_message_mode.items():  # If an index in the partitions message mode have a boolean, it applies for all partitions of this index.
@@ -118,7 +135,7 @@ def parse_from_buffer(
                     yield buffer
                 if buffer.HasField('signal') and buffer.signal:
                     signal.change()
-                if buffer.HasField('separator') and buffer.separator: 
+                if buffer.HasField('separator') and buffer.separator:
                     break
 
         def parse_message(message_field, request_iterator, signal):
@@ -209,14 +226,12 @@ def parse_from_buffer(
             try:
                 os.mkdir(cache_dir+'remote/')
             except FileExistsError: pass
-            try:
-                dirs = []
-                # 1. Save the remote partitions on cache.
-                for d in iterator: 
-                    # 2. yield remote partitions directory.
-                    if yield_remote_partition_dir: yield d
-                    dirs.append(d)
-            except Exception as e: print(e)
+            dirs = []
+            # 1. Save the remote partitions on cache.
+            for d in iterator: 
+                # 2. yield remote partitions directory.
+                if yield_remote_partition_dir: yield d
+                dirs.append(d)
             if not pf_object or len(remote_partitions_model)>0 and len(dirs) != len(remote_partitions_model): return None
             # 3. Parse to the local partitions from the remote partitions using mem_manager.
             try:
@@ -270,8 +285,9 @@ def parse_from_buffer(
                 if buffer.HasField('head'):
                     try:
                         if buffer.head.index not in indices: raise Exception('Parse from buffer error: buffer head index is not correct ' + str(buffer.head.index) + str(indices.keys()))
-                        if not (buffer.head.partitions == [] and len(partitions_model[buffer.head.index])==1 or \
-                                buffer.head.partitions == partitions_model[buffer.head.index]):  # If not match
+                        if not ((len(buffer.head.partitions)==0 and len(partitions_model[buffer.head.index])==1) or \
+                                (len(buffer.head.partitions) == len(partitions_model[buffer.head.index]) and
+                                 list(buffer.head.partitions) == partitions_model[buffer.head.index])):  # If not match
                             for b in conversor(
                                 iterator = iterate_partitions(
                                     partitions = [None for i in buffer.head.partitions] if len(buffer.head.partitions)>0 else [None],
@@ -343,13 +359,14 @@ def parse_from_buffer(
 def serialize_to_buffer(
         message_iterator, # Message or tuples (with head on the first item.)
         signal = Signal(exist=False),
-        cache_dir: str = create_cache_dir(), 
+        cache_dir: str = None, 
         indices: Union[protobuf.pyext.cpp_message.GeneratedProtocolMessageType, dict] = {},
         partitions_model: Union[list, dict] = [buffer_pb2.Buffer.Head.Partition()],
         mem_manager = lambda len: MemManager(len=len)
     ) -> Generator[buffer_pb2.Buffer, None, None]:  # method: indice
     try:
         try:
+            if not cache_dir: cache_dir = create_cache_dir()
             if type(indices) is protobuf.pyext.cpp_message.GeneratedProtocolMessageType: indices = {1: indices}
             if type(indices) is not dict: raise Exception
         
@@ -487,11 +504,14 @@ def client_grpc(
         indices_serializer: Union[protobuf.pyext.cpp_message.GeneratedProtocolMessageType, dict] = {},
         partitions_serializer: Union[list, dict] = [buffer_pb2.Buffer.Head.Partition()],
         mem_manager = lambda len: MemManager(len=len),
-        cache_dir: str = create_cache_dir(), 
+        cache_dir: str = None, 
         yield_remote_partition_dir_on_serializer: bool = False,
     ): # indice: method
     try:
+        if not cache_dir: cache_dir = create_cache_dir()
         signal = Signal()
+        os.mkdir(cache_dir+'serializer/')
+        os.mkdir(cache_dir+'parser/')
         for b in parse_from_buffer(
             request_iterator = method(
                                 serialize_to_buffer(
