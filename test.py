@@ -65,7 +65,6 @@ for i in range(1):
         solver = next(it)
 
         print('solver -> ', solver)
-        #print('next -> ', next(it))
         
         uri = get_grpc_uri(solver.instance)
         solver_stub = api_pb2_grpc.SolverStub(
