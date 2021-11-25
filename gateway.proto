@@ -1,6 +1,7 @@
 syntax = "proto3";
 package gateway;
 import "celaut.proto";
+import "buffer.proto";
 
 message Empty {}
 
@@ -18,43 +19,24 @@ message Instance {
     optional string token = 3;
 }
 
-
-
-
-// H^C 
-message HashWithConfig { 
+// ( celaut.Any.Metadata.HashTag.Hash=H, celaut.Any=S, celaut.Configuration=C; { H v S v H^C v S^C } )
+message HashWithConfig { // H^C 
     celaut.Any.Metadata.HashTag.Hash hash = 1;
     celaut.Configuration config = 3;  
 }
-
-// S^C
-message ServiceWithConfig { 
+message ServiceWithConfig { // S^C
     celaut.Any service = 2;
     celaut.Configuration config = 3;
 }
 
-
 // GRPC.
-message Buffer  {
-    message Head {
-        message Partition {
-            map<int32, Partition> index = 1;
-        }
-        int32 index = 1;
-        repeated Partition partitions = 2;
-    }
-    optional bytes chunk = 1;
-    optional bool separator = 2;
-    optional bool signal = 3;
-    optional Head head = 4;
-}
 
 service Gateway {
-    rpc StartService( stream Buffer) returns ( stream Buffer) {} // ( celaut.Any.Metadata.HashTag.Hash=H, celaut.Any=S, celaut.Configuration=C; { H v S v H^C v S^C } ) -> Instance
-    rpc StopService(stream Buffer) returns (stream Buffer) {} // TokenMessage -> Empty
-    rpc Hynode(stream Buffer) returns (stream Buffer) {} // Instance -> Instance
+    rpc StartService( stream buffer.Buffer) returns ( stream buffer.Buffer) {} // ( celaut.Any.Metadata.HashTag.Hash=H, celaut.Any=S, celaut.Configuration=C; { H v S v H^C v S^C } ) -> Instance
+    rpc StopService(stream buffer.Buffer) returns (stream buffer.Buffer) {} // TokenMessage -> Empty
+    rpc Hynode(stream buffer.Buffer) returns (stream buffer.Buffer) {} // Instance -> Instance
     
-    rpc GetFile(stream Buffer) returns (stream Buffer) {} // celaut.Any.Metadata.HashTag.Hash -> celaut.Any
-    rpc GetServiceTar(stream Buffer) returns (stream Buffer) {}// ServiceTransport -> Buffer (parse not needed.)
-    rpc GetServiceCost(stream Buffer) returns (stream Buffer) {} // ServiceTransport -> CostMessage
+    rpc GetFile(stream buffer.Buffer) returns (stream buffer.Buffer) {} // celaut.Any.Metadata.HashTag.Hash -> celaut.Any
+    rpc GetServiceTar(stream buffer.Buffer) returns (stream buffer.Buffer) {}// ( celaut.Any.Metadata.HashTag.Hash=H, celaut.Any=S; { H v S } ) -> buffer.Buffer (parse not needed.)
+    rpc GetServiceCost(stream buffer.Buffer) returns (stream buffer.Buffer) {} // ( celaut.Any.Metadata.HashTag.Hash=H, celaut.Any=S; { H v S } ) -> CostMessage
 }

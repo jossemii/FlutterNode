@@ -121,6 +121,7 @@ def parse_from_buffer(
             for i, l in partitions_message_mode.items():  # If an index in the partitions message mode have a boolean, it applies for all partitions of this index.
                 if type(l) is bool: partitions_message_mode[i] = [l for m in partitions_model[i]]
                 elif type(l) is not list: raise Exception
+            partitions_message_mode.update({i: [False] for i in indices if i not in partitions_message_mode})  # Check that it've all indices.
             
             if partitions_message_mode.keys() != indices.keys(): raise Exception # Check that partition modes' index're correct.
             for i in indices.keys(): # Check if partitions modes and partitions have the same lenght in all indices.
@@ -131,10 +132,11 @@ def parse_from_buffer(
 
         def parser_iterator(request_iterator, signal: Signal) -> Generator[buffer_pb2.Buffer, None, None]:
             for buffer in request_iterator:
-                if buffer.HasField('chunk'):
-                    yield buffer
                 if buffer.HasField('signal') and buffer.signal:
                     signal.change()
+                if buffer.HasField('chunk'):
+                    yield buffer
+                elif not buffer.HasField('head'): break
                 if buffer.HasField('separator') and buffer.separator:
                     break
 
@@ -321,7 +323,7 @@ def parse_from_buffer(
                                 request_iterator = itertools.chain([buffer], request_iterator),
                                 filename = cache_dir + 'p1',
                             ): yield b
-                    except: pass
+                    except: pass  # TODO
 
                 elif 1 in indices: # Does not've more than one index and more than one partition too.
                     if len(partitions_model[1]) > 1:
@@ -465,7 +467,7 @@ def serialize_to_buffer(
                 for partition in message[1:]:
                     if type(partition) is str:
                         for b in send_file(
-                            filename = message[1],
+                            filename = partition,
                             signal=signal
                         ): yield b
                     else:

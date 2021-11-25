@@ -1,4 +1,4 @@
-import gateway_pb2, api_pb2
+import gateway_pb2, buffer_pb2
 
 # This is part of the transport protocol (slot) data.
 StartService_input = {
@@ -10,49 +10,49 @@ StartService_input = {
 
 StartService_input_partitions = {
     2 : [
-            api_pb2.Buffer.Head.Partition(index={
-                1 : api_pb2.Buffer.Head.Partition(),
-                2 : api_pb2.Buffer.Head.Partition(index={
-                    1 : api_pb2.Buffer.Head.Partition(index={
-                        3 : api_pb2.Buffer.Head.Partition(),
-                        4 : api_pb2.Buffer.Head.Partition(),
+            buffer_pb2.Buffer.Head.Partition(index={
+                1 : buffer_pb2.Buffer.Head.Partition(),
+                2 : buffer_pb2.Buffer.Head.Partition(index={
+                    1 : buffer_pb2.Buffer.Head.Partition(index={
+                        3 : buffer_pb2.Buffer.Head.Partition(),
+                        4 : buffer_pb2.Buffer.Head.Partition(),
                     }),
-                    2 : api_pb2.Buffer.Head.Partition(),
-                    3 : api_pb2.Buffer.Head.Partition(),
-                    4 : api_pb2.Buffer.Head.Partition(),
+                    2 : buffer_pb2.Buffer.Head.Partition(),
+                    3 : buffer_pb2.Buffer.Head.Partition(),
+                    4 : buffer_pb2.Buffer.Head.Partition(),
                 })
             }),
-            api_pb2.Buffer.Head.Partition(index={
-                2 : api_pb2.Buffer.Head.Partition(index={
-                    1 : api_pb2.Buffer.Head.Partition(index={
-                        1 : api_pb2.Buffer.Head.Partition(),
-                        2 : api_pb2.Buffer.Head.Partition()
+            buffer_pb2.Buffer.Head.Partition(index={
+                2 : buffer_pb2.Buffer.Head.Partition(index={
+                    1 : buffer_pb2.Buffer.Head.Partition(index={
+                        1 : buffer_pb2.Buffer.Head.Partition(),
+                        2 : buffer_pb2.Buffer.Head.Partition()
                     }),
                 })
             })
         ],
     4 : [
-            api_pb2.Buffer.Head.Partition(index={
-                2 : api_pb2.Buffer.Head.Partition(index={
-                    1 : api_pb2.Buffer.Head.Partition(),
-                    2 : api_pb2.Buffer.Head.Partition(index={
-                        1 : api_pb2.Buffer.Head.Partition(index={
-                            3 : api_pb2.Buffer.Head.Partition(),
-                            4 : api_pb2.Buffer.Head.Partition(),
+            buffer_pb2.Buffer.Head.Partition(index={
+                2 : buffer_pb2.Buffer.Head.Partition(index={
+                    1 : buffer_pb2.Buffer.Head.Partition(),
+                    2 : buffer_pb2.Buffer.Head.Partition(index={
+                        1 : buffer_pb2.Buffer.Head.Partition(index={
+                            3 : buffer_pb2.Buffer.Head.Partition(),
+                            4 : buffer_pb2.Buffer.Head.Partition(),
                         }),
-                        2 : api_pb2.Buffer.Head.Partition(),
-                        3 : api_pb2.Buffer.Head.Partition(),
-                        4 : api_pb2.Buffer.Head.Partition(),
+                        2 : buffer_pb2.Buffer.Head.Partition(),
+                        3 : buffer_pb2.Buffer.Head.Partition(),
+                        4 : buffer_pb2.Buffer.Head.Partition(),
                     })
                 }),
-                3 : api_pb2.Buffer.Head.Partition()
+                3 : buffer_pb2.Buffer.Head.Partition()
             }),
-            api_pb2.Buffer.Head.Partition(index={
-                2 : api_pb2.Buffer.Head.Partition(index={
-                    2 : api_pb2.Buffer.Head.Partition(index={
-                        1 : api_pb2.Buffer.Head.Partition(index={
-                            1 : api_pb2.Buffer.Head.Partition(),
-                            2 : api_pb2.Buffer.Head.Partition()
+            buffer_pb2.Buffer.Head.Partition(index={
+                2 : buffer_pb2.Buffer.Head.Partition(index={
+                    2 : buffer_pb2.Buffer.Head.Partition(index={
+                        1 : buffer_pb2.Buffer.Head.Partition(index={
+                            1 : buffer_pb2.Buffer.Head.Partition(),
+                            2 : buffer_pb2.Buffer.Head.Partition()
                         }),
                     })
                 })
