@@ -15,17 +15,14 @@ def service_extended(hash):
     for h in any_p1.metadata.hashtag.hash:
         if config:  # Solo hace falta enviar la configuracion en el primer paquete.
             config = False
-            print('yield hash with config')
             yield gateway_pb2.HashWithConfig(
                 hash = h,
                 config = celaut_pb2.Configuration()
             )
             continue
-        print('yield only hash')
         yield h
     
     # Send partition model.
-    print('yield service with config')
     yield ( 
         gateway_pb2.ServiceWithConfig,
         gateway_pb2.ServiceWithConfig(
@@ -54,15 +51,14 @@ start_mem = process.memory_info().rss  # in bytes
 # Get solver cnf
 for i in range(1):
     try:
-        it = client_grpc(
+        solver = next(client_grpc(
             method=g_stub.StartService,
+            input=service_extended(hash=FRONTIER),
             indices_parser=gateway_pb2.Instance,
             partitions_message_mode_parser=True,
-            input=service_extended(hash=FRONTIER),
             indices_serializer=StartService_input,
             partitions_serializer=StartService_input_partitions
-        )
-        solver = next(it)
+        ))
 
         print('solver -> ', solver)
         
