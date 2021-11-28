@@ -13,18 +13,13 @@ g_stub = gateway_pb2_grpc.GatewayStub(
 one = True
 for i in range(1):
     one = not one
-    try:
-        for m in client_grpc(
-            method=g_stub.StartService,
-            partitions_message_mode_parser=True,
-            indices_parser=gateway_pb2.Instance,
-            yield_remote_partition_dir_on_serializer=False,
-            partitions_parser=[
-                buffer_pb2.Buffer.Head.Partition(index={1: buffer_pb2.Buffer.Head.Partition(), 2: buffer_pb2.Buffer.Head.Partition()}),
-                buffer_pb2.Buffer.Head.Partition(index={3: buffer_pb2.Buffer.Head.Partition()}),
-            ],
-            input=gateway_pb2.TokenMessage(token=str(random.randint(1, 9999)))
+    for m in client_grpc(
+        method=g_stub.StartService,
+        partitions_message_mode_parser=True,
+        indices_parser=StartService_input,
+        yield_remote_partition_dir_on_serializer=False,
+        partitions_parser=StartService_input_partitions,
+        input=gateway_pb2.TokenMessage(token=str(random.randint(1, 9999)))
 
-        ): 
-            print('message --> ', m)
-    except Exception as e: print(e)
+    ): 
+        print('message --> ', m)

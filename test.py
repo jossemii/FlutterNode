@@ -8,7 +8,7 @@ from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions
 FRONTIER = "01d030604fc89032faf57b399098db819f4ec776c0419e86cdaf64d2217014f7"
 
 def service_extended(hash):
-    any_p1 = api_pb2.celaut__pb2.Any()
+    any_p1 = gateway_pb2.ServiceWithMeta()
     any_p1.ParseFromString(open('__registry__/'+hash+'/p1', 'rb').read())
     
     config = True
