@@ -14,7 +14,7 @@ g_stub = gateway_pb2_grpc.GatewayStub(
 print('Get new services....')
 
 c_stub = api_pb2_grpc.SolverStub(
-    grpc.insecure_channel('localhost:8080')
+    grpc.insecure_channel('localhost:8081')
     )
 
 print('Tenemos clasificador. ', c_stub)
