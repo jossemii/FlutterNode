@@ -15,10 +15,9 @@ for i in range(1):
     one = not one
     for m in client_grpc(
         method=g_stub.StartService,
-        partitions_message_mode_parser=True,
+        partitions_message_mode_parser=False,
         indices_parser=StartService_input,
         yield_remote_partition_dir_on_serializer=False,
-        partitions_parser=StartService_input_partitions,
         input=gateway_pb2.TokenMessage(token=str(random.randint(1, 9999)))
 
     ): 
