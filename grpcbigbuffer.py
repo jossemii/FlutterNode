@@ -93,7 +93,12 @@ def save_chunks_to_file(buffer_iterator, filename, signal):
 
 def get_subclass(partition, object_cls):
     return get_subclass(
-        object_cls = eval(object_cls.DESCRIPTOR.fields_by_number[list(partition.index.keys())[0]].message_type.full_name), 
+        object_cls = type(
+                            getattr(
+                                object_cls(),
+                                object_cls.DESCRIPTOR.fields_by_number[list(partition.index.keys())[0]].name
+                            )
+                        ), 
         partition = list(partition.index.values())[0]
         ) if len(partition.index) == 1 else object_cls
 
@@ -518,7 +523,6 @@ def serialize_to_buffer(
                 finally: signal.wait()
 
         for message in message_iterator:
-            print('message -', message)
             if type(message) is tuple:  # If is partitioned
                 yield buffer_pb2.Buffer(
                     head = buffer_pb2.Buffer.Head(
@@ -557,7 +561,7 @@ def serialize_to_buffer(
             shutil.rmtree(cache_dir)
         except: pass
         return
-    except Exception as e: print('e- ',e)
+    except Exception as e: print(e)
 
 def client_grpc(
         method,
