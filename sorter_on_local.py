@@ -2,7 +2,7 @@ from gateway_pb2_grpcbf import StartService_input
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2
 from time import sleep, time
 
-from main import GATEWAY, RANDOM, FRONTIER, WALL, WALK, generator
+from main import GATEWAY, RANDOM, generator
 from grpcbigbuffer import client_grpc
 
 
@@ -22,7 +22,8 @@ print('Tenemos clasificador. ', c_stub)
 # Get random cnf
 random_cnf_service = next(client_grpc(
     method = g_stub.StartService,
-    output_field = gateway_pb2.Instance,
+    indices_parser = gateway_pb2.Instance,
+    partitions_message_mode_parser=True,
     input = generator(hash = RANDOM),
     indices_serializer = StartService_input
 ))
@@ -55,16 +56,18 @@ if True:#if input("\nGo to train? (y/n)")=='y':
     # Inicia el entrenamiento.
     next(client_grpc(
         method=c_stub.StartTrain,
-        input=api_pb2.Empty()
+        input=api_pb2.Empty(),
+        indices_parser=api_pb2.Empty
     ))
 
     print('Subiendo solvers al clasificador.')
     # Añade solvers.
-    for s in [FRONTIER, WALL, WALK]:
+    for s in []:
         print('     ', s)
         next(client_grpc(
             method = c_stub.UploadSolver,
-            input = ('__registry__/'+s, gateway_pb2.celaut__pb2.Any) # TODO
+            input = (gateway_pb2.ServiceWithMeta, '__registry__/'+s),
+            indices_parser=api_pb2.Empty
         ))
 
 
@@ -77,7 +80,8 @@ if True:#if input("\nGo to train? (y/n)")=='y':
         cnf = next(client_grpc(
             method=r_stub.RandomCnf,
             input=api_pb2.Empty(),
-            output_field=api_pb2.Cnf
+            indices_parser=api_pb2.Cnf,
+            partitions_message_mode_parser=True
         ))
         # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
         # ha hecho la seleccion del solver.)
@@ -86,7 +90,8 @@ if True:#if input("\nGo to train? (y/n)")=='y':
         t = time()
         interpretation = next(client_grpc(
             method=c_stub.Solve,
-            output_field=api_pb2.Interpretation,
+            indices_parser=api_pb2.Interpretation,
+            partitions_message_mode_parser=True,
             input=cnf
         ))
         print(interpretation, str(time()-t)+' OKAY THE INTERPRETATION WAS ')
@@ -97,7 +102,8 @@ print('Termina el entrenamiento')
 # En caso de que estubiera entrenando lo finaliza.
 next(client_grpc(
     method=c_stub.StopTrain,
-    input=api_pb2.Empty
+    input=api_pb2.Empty,
+    indices_parser=api_pb2.Empty
 ))
 
 # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
@@ -106,13 +112,15 @@ def final_test(c_stub, r_stub, i, j):
     cnf = next(client_grpc(
         method=r_stub.RandomCnf,
         input=api_pb2.Empty,
-        output_field=api_pb2.Cnf
+        indices_parser=api_pb2.Cnf,
+        partitions_message_mode_parser=True
     ))
     t = time()
     interpretation = next(client_grpc(
         method=c_stub.Solve,
         input=cnf,
-        output_field=api_pb2.Interpretation
+        indices_parser=api_pb2.Interpretation,
+        partitions_message_mode_parser=True
     ))
     print(interpretation, str(time()-t)+'THE FINAL INTERPRETATION IN THREAD '+str(threading.get_ident()),' last time ', i, j)
 
@@ -131,7 +139,8 @@ print('Obtiene el data_set.')
 dataset = next(client_grpc(
     method=c_stub.GetDataSet,
     input=api_pb2.Empty,
-    output_field=api_pb2.solvers__dataset__pb2.DataSet
+    indices_parser=api_pb2.solvers__dataset__pb2.DataSet,
+    partitions_message_mode_parser=True
 ))
 print('\n\DATASET -> ', dataset)
 open('dataset.bin', 'wb').write(dataset.SerializeToString())
@@ -143,7 +152,8 @@ sleep(700)
 # Stop Random cnf service.
 next(client_grpc(
     method=g_stub.StopService,
-    input=gateway_pb2.TokenMessage(token=random_cnf_service.token)
+    input=gateway_pb2.TokenMessage(token=random_cnf_service.token),
+    indices_parser=api_pb2.Empty
 ))
 print('All good?')
 
