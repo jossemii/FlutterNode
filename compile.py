@@ -5,12 +5,10 @@ from main import MOJITO
 
 
 def compile(partitions_model, repo):
-    stub = gateway_pb2_grpc.GatewayStub(
-        grpc.insecure_channel(MOJITO+':8080')
-    )
-
     return next(grpcbigbuffer.client_grpc(
-        method = stub.Compile,
+        method = gateway_pb2_grpc.GatewayStub(
+                    grpc.insecure_channel(MOJITO+':8080')
+                ).Compile,
         input = gateway_pb2.CompileInput(
             repo = repo,
             partitions_model = partitions_model,
