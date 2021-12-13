@@ -1,24 +1,31 @@
-from api_pb2 import ServiceWithMeta
-import grpcbigbuffer, gateway_pb2_grpc, grpc, gateway_pb2, sys, buffer_pb2
+from gateway_pb2_grpcbf import Compile_output_partitions_v1, Compile_output_partitions_v2
+import grpcbigbuffer, gateway_pb2_grpc, grpc, gateway_pb2, sys, os
 
 from main import MOJITO
 
 
-def compile(partitions_model, repo):
-    return next(grpcbigbuffer.client_grpc(
+def compile(partitions_model, partitions_message_mode_parser, repo):
+    for b in grpcbigbuffer.client_grpc(
         method = gateway_pb2_grpc.GatewayStub(
-                    grpc.insecure_channel(MOJITO+':8080')
+                    grpc.insecure_channel('localhost'+':8080')
                 ).Compile,
         input = gateway_pb2.CompileInput(
             repo = repo,
             partitions_model = partitions_model,
         ),
-        indices_parser = gateway_pb2.ServiceWithMeta,
+        indices_parser = gateway_pb2.CompileOutput,
         partitions_parser = partitions_model,
-        partitions_message_mode_parser = False
-    ))
+        partitions_message_mode_parser = partitions_message_mode_parser
+    ): yield b
 
-compile(
-    partitions_model = buffer_pb2.Buffer.Head.Partition(),
+id = None
+for b in compile(
+    partitions_model = Compile_output_partitions_v1 if not len(sys.argv)>2 else Compile_output_partitions_v2,
+    partitions_message_mode_parser = [True, False] if not len(sys.argv)>2 else [True, False, False],
     repo = sys.argv[1]
-)
+): 
+    print(id, b)
+    if b is gateway_pb2.CompileOutput: pass
+    elif not id and type(b) is gateway_pb2.CompileOutput: id = b.id
+    elif id: os.system('mv '+b+' '+'__registry__/'+id+'/')
+    else: raise Exception('Error with the compiler output.')
