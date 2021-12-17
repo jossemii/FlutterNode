@@ -19,13 +19,15 @@ def compile(partitions_model, partitions_message_mode_parser, repo):
     ): yield b
 
 id = None
+print(len(sys.argv)>2 )
 for b in compile(
     partitions_model = Compile_output_partitions_v1 if not len(sys.argv)>2 else Compile_output_partitions_v2,
     partitions_message_mode_parser = [True, False] if not len(sys.argv)>2 else [True, False, False],
     repo = sys.argv[1]
 ): 
-    print(id, b)
+    print('\nb -> ', b, type(b))
+    """
     if b is gateway_pb2.CompileOutput: pass
     elif not id and type(b) is gateway_pb2.CompileOutput: id = b.id
     elif id: os.system('mv '+b+' '+'__registry__/'+id+'/')
-    else: raise Exception('Error with the compiler output.')
+    else: raise Exception('\nError with the compiler output.'+ str(b))"""
