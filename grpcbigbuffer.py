@@ -44,6 +44,16 @@ def modify_env(cache_dir: str = None, mem_manager = None):
 def generate_random_dir(dir: str) -> str:
     return dir + str(randint(1, MAX_DIR)) + '/'
 
+def message_to_bytes(message) -> bytes:
+    if type(type(message)) is protobuf.pyext.cpp_message.GeneratedProtocolMessageType:
+        return message.SerializeToString()
+    elif type(message) is str:
+        return bytes(message, 'utf-8')
+    else:
+        try:
+            return bytes(message)
+        except TypeError: raise('gRPCbb error -> Serialize message error: some primitive type message not suported for contain partition '+ str(type(message)))
+
 def create_cache_dir() -> str: 
     cache_dir = Enviroment.cache_dir
     try:
@@ -490,14 +500,7 @@ def serialize_to_buffer(
                 cache_dir: str= None, 
             ) -> Generator[buffer_pb2.Buffer, None, None]:
 
-            if type(type(message)) is protobuf.pyext.cpp_message.GeneratedProtocolMessageType:
-                message_bytes = message.SerializeToString()
-            elif type(message) is str:
-                message_bytes = bytes(message, 'utf-8')
-            else:
-                try:
-                    message_bytes = bytes(message)
-                except TypeError: raise('gRPCbb error -> Serialize message error: some primitive type message not suported for contain partition '+ str(type(message)))
+            message_bytes = message_to_bytes(message = message)
                 
             if len(message_bytes) < CHUNK_SIZE:
                 signal.wait()
@@ -550,6 +553,7 @@ def serialize_to_buffer(
                 )
                 
                 for partition in message[1:]:
+                    print('partition -> ', partition)
                     if type(partition) is Dir:
                         for b in send_file(
                             filedir = partition,
