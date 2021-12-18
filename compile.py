@@ -30,3 +30,8 @@ for b in compile(
         os.mkdir('__registry__/'+id)
     elif id: os.system('mv '+b+' '+'__registry__/'+id+'/')
     else: raise Exception('\nError with the compiler output.'+ str(b))
+
+if not len(sys.argv)>2:
+    os.rename('__registry__/'+id, '__registry__/'+id+'folder')
+    os.system('mv __registry__/'+id+'folder/'+os.listdir('__registry__/'+id+'folder')[0]+' __registry__/'+id)
+    os.system('rm -rf __registry__/'+id+'folder')
