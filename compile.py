@@ -25,9 +25,9 @@ for b in compile(
     partitions_message_mode_parser = [True, False] if not len(sys.argv)>2 else [True, False, False],
     repo = sys.argv[1]
 ): 
-    print('\nb -> ', b, type(b))
-    """
     if b is gateway_pb2.CompileOutput: pass
-    elif not id and type(b) is gateway_pb2.CompileOutput: id = b.id
+    elif not id and type(b) is str: 
+        id = b
+        os.mkdir('__registry__/'+id)
     elif id: os.system('mv '+b+' '+'__registry__/'+id+'/')
-    else: raise Exception('\nError with the compiler output.'+ str(b))"""
+    else: raise Exception('\nError with the compiler output.'+ str(b))
