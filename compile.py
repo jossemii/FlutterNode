@@ -7,7 +7,7 @@ from main import MOJITO
 def compile(partitions_model, partitions_message_mode_parser, repo):
     for b in grpcbigbuffer.client_grpc(
         method = gateway_pb2_grpc.GatewayStub(
-                    grpc.insecure_channel('localhost'+':8080')
+                    grpc.insecure_channel(MOJITO+':8080')
                 ).Compile,
         input = gateway_pb2.CompileInput(
             repo = repo,
@@ -24,9 +24,9 @@ for b in compile(
     partitions_message_mode_parser = [True, False] if not len(sys.argv)>2 else [True, False, False],
     repo = sys.argv[1]
 ): 
-    if b is gateway_pb2.CompileOutput: pass
-    elif not id and type(b) is str: 
-        id = b
+    if b is gateway_pb2.CompileOutput: continue
+    elif not id: 
+        id = b.hex()
         os.mkdir('__registry__/'+id)
     elif id: os.system('mv '+b+' '+'__registry__/'+id+'/')
     else: raise Exception('\nError with the compiler output.'+ str(b))

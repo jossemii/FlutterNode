@@ -40,7 +40,7 @@ message CompileInput {
 }
 
 message CompileOutput {
-    string id = 1;
+    bytes id = 1;
     ServiceWithMeta service = 2;
 }
 
