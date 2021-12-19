@@ -9,9 +9,9 @@ from main import RANDOM
 
 def service_extended(hash):
     yield gateway_pb2.HashWithConfig(
-        hash = celaut_pb2.Any.Metadata.HasTag.Hash(
-            type = bytes(SHA3_256, 'utf-8'),
-            value = bytes(hash, 'utf-8')
+        hash = celaut_pb2.Any.Metadata.HashTag.Hash(
+            type = bytes.fromhex(SHA3_256),
+            value = bytes.fromhex(hash)
         ),
         config = celaut_pb2.Configuration()
     )
