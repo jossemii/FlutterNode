@@ -1,35 +1,25 @@
 from time import sleep
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2_grpc, api_pb2, celaut_pb2
 
-from main import FRONTIER, GATEWAY, RANDOM
-from grpcbigbuffer import client_grpc
-from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions
+from main import FRONTIER, GATEWAY, RANDOM, SHA3_256
+from grpcbigbuffer import Dir, client_grpc
+from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions_v1
 
-FRONTIER = "01d030604fc89032faf57b399098db819f4ec776c0419e86cdaf64d2217014f7"
+from main import RANDOM
 
 def service_extended(hash):
-    any_p1 = gateway_pb2.ServiceWithMeta()
-    any_p1.ParseFromString(open('__registry__/'+hash+'/p1', 'rb').read())
-    
-    config = True
-    for h in any_p1.metadata.hashtag.hash:
-        if config:  # Solo hace falta enviar la configuracion en el primer paquete.
-            config = False
-            yield gateway_pb2.HashWithConfig(
-                hash = h,
-                config = celaut_pb2.Configuration()
-            )
-            continue
-        yield h
-    
+    yield gateway_pb2.HashWithConfig(
+        hash = celaut_pb2.Any.Metadata.HasTag.Hash(
+            type = bytes(SHA3_256, 'utf-8'),
+            value = bytes(hash, 'utf-8')
+        ),
+        config = celaut_pb2.Configuration()
+    )
+
     # Send partition model.
     yield ( 
-        gateway_pb2.ServiceWithConfig,
-        gateway_pb2.ServiceWithConfig(
-            service = any_p1,
-            config = celaut_pb2.Configuration()
-        ),
-        '__registry__/'+hash+'/p2'
+        gateway_pb2.ServiceWithMeta,
+        Dir('__registry__/'+hash)
     )
 
 def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
@@ -52,12 +42,12 @@ start_mem = process.memory_info().rss  # in bytes
 for i in range(1):
     try:
         solver = next(client_grpc(
-            method=g_stub.StartService,
-            input=service_extended(hash=FRONTIER),
-            indices_parser=gateway_pb2.Instance,
-            partitions_message_mode_parser=True,
-            indices_serializer=StartService_input,
-            partitions_serializer=StartService_input_partitions
+            method = g_stub.StartService,
+            input = service_extended(hash = RANDOM),
+            indices_parser = gateway_pb2.Instance,
+            partitions_message_mode_parser = True,
+            indices_serializer = StartService_input,
+            partitions_serializer = StartService_input_partitions_v1  # There it's not used.
         ))
 
         print('solver -> ', solver)
