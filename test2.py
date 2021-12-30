@@ -18,10 +18,12 @@ def read_file(filename):
 
 import threading
 
-x = threading.Thread(target=read_file, args=('__registry__/16426da109eed68c89bf32bcbcab208649f01d608116f1dda15e12d55fc95456', ))
-y = threading.Thread(target=read_file, args=('__registry__/47744b30d73d12235f80be88e6e665d5f2d4784f9ca90a12bc9e002633fd9b3e', ))
-z = threading.Thread(target=read_file, args=('__registry__/60610f898fc859ca133cb971e9fd757fbf40513e60eee0a0f937994781922cdd', ))
-t = threading.Thread(target=read_file, args=('__registry__/60610f898fc859ca133cb971e9fd757fbf40513e60eee0a0f937994781922cdd', ))
+from main import RANDOM
+
+x = threading.Thread(target=read_file, args=('__registry__/'+RANDOM, ))
+y = threading.Thread(target=read_file, args=('__registry__/'+RANDOM, ))
+z = threading.Thread(target=read_file, args=('__registry__/'+RANDOM, ))
+t = threading.Thread(target=read_file, args=('__registry__/'+RANDOM, ))
 
 x.start()
 y.start()

@@ -1,7 +1,7 @@
 from time import sleep
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2_grpc, api_pb2, celaut_pb2
 
-from main import FRONTIER, GATEWAY, RANDOM, SHA3_256
+from main import FRONTIER, GATEWAY, RANDOM, SHA3_256, MOJITO
 from grpcbigbuffer import Dir, client_grpc
 from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions_v1
 
@@ -33,7 +33,7 @@ def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
 
 
 g_stub = gateway_pb2_grpc.GatewayStub(
-    grpc.insecure_channel(GATEWAY + ':8080'),
+    grpc.insecure_channel('localhost' + ':8080'),
 )
 import os, psutil
 process = psutil.Process(os.getpid())
