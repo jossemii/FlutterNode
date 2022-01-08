@@ -33,7 +33,7 @@ def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
 
 
 g_stub = gateway_pb2_grpc.GatewayStub(
-    grpc.insecure_channel('localhost' + ':8080'),
+    grpc.insecure_channel(MOJITO + ':8080'),
 )
 import os, psutil
 process = psutil.Process(os.getpid())
