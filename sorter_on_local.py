@@ -2,13 +2,13 @@ from gateway_pb2_grpcbf import StartService_input
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2
 from time import sleep, time
 
-from main import GATEWAY, RANDOM, generator
+from main import GATEWAY, MOJITO, RANDOM, generator
 from grpcbigbuffer import client_grpc
 
 
 
 g_stub = gateway_pb2_grpc.GatewayStub(
-    grpc.insecure_channel(GATEWAY + ':8080'),
+    grpc.insecure_channel(MOJITO + ':8090'),
 )
 
 print('Get new services....')
@@ -17,6 +17,13 @@ c_stub = api_pb2_grpc.SolverStub(
     grpc.insecure_channel('localhost:8081')
     )
 
+next(client_grpc(
+    method=c_stub.StartTrain,
+    input=api_pb2.Empty(),
+    indices_parser=api_pb2.Empty
+))
+
+exit()
 print('Tenemos clasificador. ', c_stub)
 
 # Get random cnf

@@ -33,7 +33,7 @@ def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
 
 
 g_stub = gateway_pb2_grpc.GatewayStub(
-    grpc.insecure_channel(MOJITO + ':8080'),
+    grpc.insecure_channel(MOJITO + ':8090'),
 )
 import os, psutil
 process = psutil.Process(os.getpid())
@@ -53,7 +53,7 @@ for i in range(1):
         print('solver -> ', solver)
         
         uri = get_grpc_uri(solver.instance)
-        solver_stub = api_pb2_grpc.SolverStub(
+        solver_stub = api_pb2_grpc.RandomStub(
             grpc.insecure_channel(
                 uri.ip + ':' + str(uri.port)
             )
@@ -64,18 +64,18 @@ for i in range(1):
         print(' SOLVER SERVICE -> ', uri)
     except Exception as e: print('eee -> ', e)
 
-
-    continue
     # Get random cnf
+    sleep(1)
     print('\n\nGet new services....')
-    random = next(client_grpc(
-        method = g_stub.StartService,
-        output_field = gateway_pb2.Instance,
-        input = service_extended(hash=RANDOM),
-        indices_serializer = StartService_input,
-        partitions_serializer = StartService_input_partitions
-    ))
+    cnf = client_grpc(
+        method = solver_stub.RandomCnf,
+        indices_parser = api_pb2.Cnf,
+        partitions_message_mode_parser = True,
+        input = gateway_pb2.Empty()
+    )
 
+    print('cnf -> ',next(cnf))
+    continue
     uri = get_grpc_uri(random.instance)
     random_stub = api_pb2_grpc.RandomStub(
         grpc.insecure_channel(
