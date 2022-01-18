@@ -2,8 +2,8 @@ from gateway_pb2_grpcbf import StartService_input
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2
 from time import sleep, time
 
-from main import GATEWAY, MOJITO, RANDOM, generator
-from grpcbigbuffer import client_grpc
+from main import GATEWAY, MOJITO, RANDOM, FRONTIER, WALL, WALK, generator
+from grpcbigbuffer import Dir, client_grpc
 
 
 
@@ -17,14 +17,17 @@ c_stub = api_pb2_grpc.SolverStub(
     grpc.insecure_channel('localhost:8081')
     )
 
-next(client_grpc(
-    method=c_stub.StartTrain,
-    input=api_pb2.Empty(),
-    indices_parser=api_pb2.Empty
-))
-
-exit()
 print('Tenemos clasificador. ', c_stub)
+
+print('Subiendo solvers al clasificador.')
+# Añade solvers.
+for s in [FRONTIER, WALL, WALK]:
+    print('     ', s)
+    next(client_grpc(
+        method = c_stub.UploadSolver,
+        input = (gateway_pb2.ServiceWithMeta, Dir('__registry__/'+s)),
+        indices_parser = api_pb2.Empty
+    ))
 
 # Get random cnf
 random_cnf_service = next(client_grpc(
@@ -45,38 +48,29 @@ r_stub = api_pb2_grpc.RandomStub(
 print('Tenemos random. ', r_stub)
 
 #sleep(10) # Espera a que el servidor se levante.
-
 try:
     dataset = solvers_dataset_pb2.DataSet()
     dataset.ParseFromString(open('dataset.bin', 'rb').read())
     next(client_grpc(
         method=c_stub.AddDataSet,
-        input=dataset
+        input=dataset,
+        indices_parser=solvers_dataset_pb2.DataSet
     ))
     print('Dataset añadido.')
 except Exception as e:
     print('No tenemos dataset.')
     pass
 
+
 if True:#if input("\nGo to train? (y/n)")=='y':
     print('Iniciando entrenamiento...')
+    
     # Inicia el entrenamiento.
     next(client_grpc(
         method=c_stub.StartTrain,
         input=api_pb2.Empty(),
-        indices_parser=api_pb2.Empty
+        indices_parser = api_pb2.Empty
     ))
-
-    print('Subiendo solvers al clasificador.')
-    # Añade solvers.
-    for s in []:
-        print('     ', s)
-        next(client_grpc(
-            method = c_stub.UploadSolver,
-            input = (gateway_pb2.ServiceWithMeta, '__registry__/'+s),
-            indices_parser=api_pb2.Empty
-        ))
-
 
     print('Wait to train the model ...')
     for i in range(50): 
@@ -85,23 +79,27 @@ if True:#if input("\nGo to train? (y/n)")=='y':
             sleep(200)
         
         cnf = next(client_grpc(
-            method=r_stub.RandomCnf,
-            input=api_pb2.Empty(),
-            indices_parser=api_pb2.Cnf,
-            partitions_message_mode_parser=True
+            method = r_stub.RandomCnf,
+            indices_parser = api_pb2.Cnf,
+            partitions_message_mode_parser = True,
+            input = gateway_pb2.Empty()
         ))
+        print('cnf -> ', cnf)
         # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
         # ha hecho la seleccion del solver.)
         print('\n ---- ', i)
         print(' SOLVING CNF ...')
         t = time()
-        interpretation = next(client_grpc(
-            method=c_stub.Solve,
-            indices_parser=api_pb2.Interpretation,
-            partitions_message_mode_parser=True,
-            input=cnf
-        ))
-        print(interpretation, str(time()-t)+' OKAY THE INTERPRETATION WAS ')
+        try:
+            interpretation = next(client_grpc(
+                method=c_stub.Solve,
+                indices_parser=api_pb2.Interpretation,
+                partitions_message_mode_parser=True,
+                input=cnf,
+                indices_serializer=api_pb2.Cnf
+            ))
+            print(interpretation, str(time()-t)+' OKAY THE INTERPRETATION WAS ')
+        except StopIteration: print('tensor is not ready yet.')
 
     sleep(60)
 

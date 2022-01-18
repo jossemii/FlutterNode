@@ -41,7 +41,7 @@ start_mem = process.memory_info().rss  # in bytes
 # Get solver cnf
 for i in range(1):
     try:
-        solver = next(client_grpc(
+        random = next(client_grpc(
             method = g_stub.StartService,
             input = service_extended(hash = RANDOM),
             indices_parser = gateway_pb2.Instance,
@@ -50,10 +50,30 @@ for i in range(1):
             partitions_serializer = StartService_input_partitions_v1  # There it's not used.
         ))
 
-        print('solver -> ', solver)
+        print('random -> ', random)
+        
+        uri = get_grpc_uri(random.instance)
+        random_stub = api_pb2_grpc.RandomStub(
+            grpc.insecure_channel(
+                uri.ip + ':' + str(uri.port)
+            )
+        )
+        random_token = random.token
+        
+        solver = next(client_grpc(
+            method = g_stub.StartService,
+            input = service_extended(hash = FRONTIER),
+            indices_parser = gateway_pb2.Instance,
+            partitions_message_mode_parser = True,
+            indices_serializer = StartService_input,
+            partitions_serializer = StartService_input_partitions_v1  # There it's not used.
+        ))
+        
+        print('SOLVER -> ', solver)
         
         uri = get_grpc_uri(solver.instance)
-        solver_stub = api_pb2_grpc.RandomStub(
+        
+        solver_stub = api_pb2_grpc.SolverStub(
             grpc.insecure_channel(
                 uri.ip + ':' + str(uri.port)
             )
@@ -66,41 +86,21 @@ for i in range(1):
 
     # Get random cnf
     sleep(1)
-    print('\n\nGet new services....')
-    cnf = client_grpc(
-        method = solver_stub.RandomCnf,
-        indices_parser = api_pb2.Cnf,
-        partitions_message_mode_parser = True,
-        input = gateway_pb2.Empty()
-    )
-
-    print('cnf -> ',next(cnf))
-    continue
-    uri = get_grpc_uri(random.instance)
-    random_stub = api_pb2_grpc.RandomStub(
-        grpc.insecure_channel(
-            uri.ip + ':' + str(uri.port)
-        )
-    )
-    random_token = random.token
-
-
-    for i in range(10):
-        print(' RANDOM SERVICE -> ', uri)
-        sleep(1)
+    print('\n\nTest it')
+    while True:
         cnf = next(client_grpc(
-            method=random_stub.RandomCnf,
-            input = api_pb2.Empty(),
-            output_field=api_pb2.Cnf,
-            mem_manager = lambda len: None,
+            method = random_stub.RandomCnf,
+            indices_parser = api_pb2.Cnf,
+            partitions_message_mode_parser = True,
+            input = gateway_pb2.Empty()
         ))
-
-        print('CNF -> ', cnf)
 
         interpretation  = next(client_grpc(
             method=solver_stub.Solve,
             input=cnf,
-            output_field=api_pb2.Interpretation
+            indices_serializer = api_pb2.Cnf,
+            indices_parser=api_pb2.Interpretation,
+            partitions_message_mode_parser = True
         ))
 
         print('Interpretation -> ', interpretation)
