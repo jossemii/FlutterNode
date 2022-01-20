@@ -47,6 +47,8 @@ r_stub = api_pb2_grpc.RandomStub(
 
 print('Tenemos random. ', r_stub)
 
+
+
 #sleep(10) # Espera a que el servidor se levante.
 try:
     dataset = solvers_dataset_pb2.DataSet()
@@ -58,9 +60,8 @@ try:
     ))
     print('Dataset añadido.')
 except Exception as e:
-    print('No tenemos dataset.')
+    print('No tenemos dataset.', str(e))
     pass
-
 
 if True:#if input("\nGo to train? (y/n)")=='y':
     print('Iniciando entrenamiento...')
@@ -78,6 +79,16 @@ if True:#if input("\nGo to train? (y/n)")=='y':
             print(' time ', i, j)
             sleep(200)
         
+        print('Obtiene el data_set.')
+        dataset = next(client_grpc(
+            method=c_stub.GetDataSet,
+            input=api_pb2.Empty,
+            indices_parser=api_pb2.solvers__dataset__pb2.DataSet,
+            partitions_message_mode_parser=True
+        ))
+        print('\n\DATASET -> ', dataset)
+        open('dataset.bin', 'wb').write(dataset.SerializeToString())
+
         cnf = next(client_grpc(
             method = r_stub.RandomCnf,
             indices_parser = api_pb2.Cnf,
