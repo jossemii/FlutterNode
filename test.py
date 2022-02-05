@@ -33,7 +33,7 @@ def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
 
 
 g_stub = gateway_pb2_grpc.GatewayStub(
-    grpc.insecure_channel(MOJITO + ':8090'),
+    grpc.insecure_channel('localhost' + ':8090'),
 )
 import os, psutil
 process = psutil.Process(os.getpid())
@@ -85,7 +85,8 @@ for i in range(1):
     except Exception as e: print('eee -> ', e)
 
     # Get random cnf
-    sleep(1)
+    print('\nwait...')
+    sleep(10)
     print('\n\nTest it')
     while True:
         cnf = next(client_grpc(
