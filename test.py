@@ -38,70 +38,70 @@ g_stub = gateway_pb2_grpc.GatewayStub(
 import os, psutil
 process = psutil.Process(os.getpid())
 start_mem = process.memory_info().rss  # in bytes 
+
+
 # Get solver cnf
-for i in range(1):
-    try:
-        random = next(client_grpc(
-            method = g_stub.StartService,
-            input = service_extended(hash = RANDOM),
-            indices_parser = gateway_pb2.Instance,
-            partitions_message_mode_parser = True,
-            indices_serializer = StartService_input,
-            partitions_serializer = StartService_input_partitions_v1  # There it's not used.
-        ))
+random = next(client_grpc(
+    method = g_stub.StartService,
+    input = service_extended(hash = RANDOM),
+    indices_parser = gateway_pb2.Instance,
+    partitions_message_mode_parser = True,
+    indices_serializer = StartService_input,
+    partitions_serializer = StartService_input_partitions_v1  # There it's not used.
+))
 
-        print('random -> ', random)
-        
-        uri = get_grpc_uri(random.instance)
-        random_stub = api_pb2_grpc.RandomStub(
-            grpc.insecure_channel(
-                uri.ip + ':' + str(uri.port)
-            )
-        )
-        random_token = random.token
-        
-        solver = next(client_grpc(
-            method = g_stub.StartService,
-            input = service_extended(hash = FRONTIER),
-            indices_parser = gateway_pb2.Instance,
-            partitions_message_mode_parser = True,
-            indices_serializer = StartService_input,
-            partitions_serializer = StartService_input_partitions_v1  # There it's not used.
-        ))
-        
-        print('SOLVER -> ', solver)
-        
-        uri = get_grpc_uri(solver.instance)
-        
-        solver_stub = api_pb2_grpc.SolverStub(
-            grpc.insecure_channel(
-                uri.ip + ':' + str(uri.port)
-            )
-        )
-        solver_token = solver.token
+print('random -> ', random)
 
-        print('\n\n memory usage -> ', process.memory_info().rss - start_mem)
-        print(' SOLVER SERVICE -> ', uri)
-    except Exception as e: print('eee -> ', e)
+exit()
 
-    # Get random cnf
-    print('\nwait...')
-    sleep(10)
-    print('\n\nTest it')
-    while True:
-        cnf = next(client_grpc(
-            method = random_stub.RandomCnf,
-            indices_parser = api_pb2.Cnf,
-            partitions_message_mode_parser = True,
-            input = gateway_pb2.Empty()
-        ))
+uri = get_grpc_uri(random.instance)
+random_stub = api_pb2_grpc.RandomStub(
+    grpc.insecure_channel(
+        uri.ip + ':' + str(uri.port)
+    )
+)
+random_token = random.token
 
-        interpretation  = next(client_grpc(
-            method=solver_stub.Solve,
-            input=cnf,
-            indices_serializer = api_pb2.Cnf,
-            indices_parser=api_pb2.Interpretation,
-            partitions_message_mode_parser = True
-        ))
+solver = next(client_grpc(
+    method = g_stub.StartService,
+    input = service_extended(hash = FRONTIER),
+    indices_parser = gateway_pb2.Instance,
+    partitions_message_mode_parser = True,
+    indices_serializer = StartService_input,
+    partitions_serializer = StartService_input_partitions_v1  # There it's not used.
+))
 
-        print('Interpretation -> ', interpretation)
+print('SOLVER -> ', solver)
+
+uri = get_grpc_uri(solver.instance)
+
+solver_stub = api_pb2_grpc.SolverStub(
+    grpc.insecure_channel(
+        uri.ip + ':' + str(uri.port)
+    )
+)
+solver_token = solver.token
+
+print('\n\n memory usage -> ', process.memory_info().rss - start_mem)
+print(' SOLVER SERVICE -> ', uri)
+
+print('\nwait...')
+sleep(10)
+print('\n\nTest it')
+while True:
+    cnf = next(client_grpc(
+        method = random_stub.RandomCnf,
+        indices_parser = api_pb2.Cnf,
+        partitions_message_mode_parser = True,
+        input = gateway_pb2.Empty()
+    ))
+
+    interpretation  = next(client_grpc(
+        method=solver_stub.Solve,
+        input=cnf,
+        indices_serializer = api_pb2.Cnf,
+        indices_parser=api_pb2.Interpretation,
+        partitions_message_mode_parser = True
+    ))
+
+    print('Interpretation -> ', interpretation)
