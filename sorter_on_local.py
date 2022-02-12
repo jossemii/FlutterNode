@@ -8,7 +8,7 @@ from grpcbigbuffer import Dir, client_grpc
 
 
 g_stub = gateway_pb2_grpc.GatewayStub(
-    grpc.insecure_channel('192.168.1.143' + ':8090'),
+    grpc.insecure_channel(MOJITO + ':8090'),
 )
 
 print('Get new services....')
