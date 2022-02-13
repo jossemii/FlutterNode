@@ -8,7 +8,7 @@ from grpcbigbuffer import Dir, client_grpc
 
 
 g_stub = gateway_pb2_grpc.GatewayStub(
-    grpc.insecure_channel(MOJITO + ':8090'),
+    grpc.insecure_channel('localhost' + ':8090'),
 )
 
 print('Get new services....')
@@ -21,7 +21,7 @@ print('Tenemos clasificador. ', c_stub)
 
 print('Subiendo solvers al clasificador.')
 # Añade solvers.
-for s in [FRONTIER, WALL, WALK]:
+for s in []: #[FRONTIER, WALL, WALK]:
     print('     ', s)
     next(client_grpc(
         method = c_stub.UploadSolver,
@@ -56,13 +56,24 @@ try:
     next(client_grpc(
         method=c_stub.AddDataSet,
         input=dataset,
-        indices_parser=solvers_dataset_pb2.DataSet
+        indices_parser=api_pb2.Empty
     ))
     print('Dataset añadido.')
 except Exception as e:
     print('No tenemos dataset.', str(e))
     pass
 
+print('\nObtiene el data_set.')
+dataset = next(client_grpc(
+    method=c_stub.GetDataSet,
+    input=api_pb2.Empty,
+    indices_parser = solvers_dataset_pb2.DataSet,
+    partitions_message_mode_parser = True
+))
+print('\n\DATASET -> ', dataset)
+open('dataset.bin', 'wb').write(dataset.SerializeToString())
+
+exit()
 if True:#if input("\nGo to train? (y/n)")=='y':
     print('Iniciando entrenamiento...')
     
