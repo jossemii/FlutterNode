@@ -21,7 +21,7 @@ print('Tenemos clasificador. ', c_stub)
 
 print('Subiendo solvers al clasificador.')
 # Añade solvers.
-for s in []: #[FRONTIER, WALL, WALK]:
+for s in [FRONTIER, WALL, WALK]:
     print('     ', s)
     next(client_grpc(
         method = c_stub.UploadSolver,
@@ -64,7 +64,7 @@ except Exception as e:
     pass
 
 print('\nObtiene el data_set.')
-dataset = next(client_grpc(
+dataset = next(client_grpc( # TODO check bug. Iterating requests.
     method=c_stub.GetDataSet,
     input=api_pb2.Empty,
     indices_parser = solvers_dataset_pb2.DataSet,
