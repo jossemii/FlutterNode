@@ -55,10 +55,10 @@ def exec(id: int, solver_hash: str):
 
 
 
-    uri = get_grpc_uri(random.instance)
+    random_uri = get_grpc_uri(random.instance)
     random_stub = api_pb2_grpc.RandomStub(
         grpc.insecure_channel(
-            uri.ip + ':' + str(uri.port)
+            random_uri.ip + ':' + str(random_uri.port)
         )
     )
     random_token = random.token
@@ -74,39 +74,47 @@ def exec(id: int, solver_hash: str):
 
     print('SOLVER ',id,' -> ', solver)
 
-    uri = get_grpc_uri(solver.instance)
+    solver_uri = get_grpc_uri(solver.instance)
 
     solver_stub = api_pb2_grpc.SolverStub(
         grpc.insecure_channel(
-            uri.ip + ':' + str(uri.port)
+            random_uri.ip + ':' + str(random_uri.port)
         )
     )
     solver_token = solver.token
 
-    print(' SOLVER SERVICE ',id,' -> ', uri)
+    print(' SOLVER SERVICE ',id,' -> ', solver_uri)
 
     print('\nwait.',id,' ..')
     sleep(10)
-    print('\n\nTest it  ',id,' ')
+    print('\n\nTest it  ',id,' on ', solver_uri)
     for i in range(randint(10, 100)):
-        cnf = next(client_grpc(
-            method = random_stub.RandomCnf,
-            indices_parser = api_pb2.Cnf,
-            partitions_message_mode_parser = True,
-            input = gateway_pb2.Empty()
-        ))
+        while True:
+            try:
+                cnf = next(client_grpc(
+                    method = random_stub.RandomCnf,
+                    indices_parser = api_pb2.Cnf,
+                    partitions_message_mode_parser = True,
+                    input = gateway_pb2.Empty()
+                ))
+                break
+            except: pass
 
-        interpretation  = next(client_grpc(
-            method=solver_stub.Solve,
-            input=cnf,
-            indices_serializer = api_pb2.Cnf,
-            indices_parser=api_pb2.Interpretation,
-            partitions_message_mode_parser = True
-        ))
+        while True:
+            try:
+                interpretation  = next(client_grpc(
+                    method=solver_stub.Solve,
+                    input=cnf,
+                    indices_serializer = api_pb2.Cnf,
+                    indices_parser=api_pb2.Interpretation,
+                    partitions_message_mode_parser = True
+                ))
+                break
+            except: pass
 
         print('Interpretation  ',id,' -- ',i,' -> ', interpretation)
 
-    print('Go to stop that  ',id,' .')
+    print('Go to stop that  ',id,' .', random_token, solver_token)
     next(client_grpc(
         method = g_stub.StopService,
         input = random_token,
