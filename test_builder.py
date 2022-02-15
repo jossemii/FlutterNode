@@ -29,7 +29,7 @@ def service_extended(hash):
 def build_method(hash: str):
     service = next(client_grpc(
         method = gateway_pb2_grpc.GatewayStub(
-                    grpc.insecure_channel('localhost' + ':8090'),
+                    grpc.insecure_channel(MOJITO + ':8090'),
                 ).StartService,
         input = service_extended(hash = hash),
         indices_parser = gateway_pb2.Instance,
@@ -39,7 +39,7 @@ def build_method(hash: str):
     ))
     print('service -> ', service)
 
-for s in [RANDOM, FRONTIER, WALK, WALL]:
+for s in [FRONTIER, WALL]:
     print('Go to build ', s)
     threading.Thread(
         target=build_method,

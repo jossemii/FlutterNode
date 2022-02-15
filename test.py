@@ -1,7 +1,10 @@
+from random import randint, random, choice
+import sys
+from threading import Thread
 from time import sleep
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2_grpc, api_pb2, celaut_pb2
 
-from main import FRONTIER, GATEWAY, RANDOM, SHA3_256, MOJITO
+from main import FRONTIER, GATEWAY, RANDOM, SHA3_256, MOJITO, WALK, WALL
 from grpcbigbuffer import Dir, client_grpc
 from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions_v1
 
@@ -35,73 +38,95 @@ def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
 g_stub = gateway_pb2_grpc.GatewayStub(
     grpc.insecure_channel('localhost' + ':8090'),
 )
-import os, psutil
-process = psutil.Process(os.getpid())
-start_mem = process.memory_info().rss  # in bytes 
 
-
-# Get solver cnf
-random = next(client_grpc(
-    method = g_stub.StartService,
-    input = service_extended(hash = RANDOM),
-    indices_parser = gateway_pb2.Instance,
-    partitions_message_mode_parser = True,
-    indices_serializer = StartService_input,
-    partitions_serializer = StartService_input_partitions_v1  # There it's not used.
-))
-
-print('random -> ', random)
-
-exit()
-
-uri = get_grpc_uri(random.instance)
-random_stub = api_pb2_grpc.RandomStub(
-    grpc.insecure_channel(
-        uri.ip + ':' + str(uri.port)
-    )
-)
-random_token = random.token
-
-solver = next(client_grpc(
-    method = g_stub.StartService,
-    input = service_extended(hash = FRONTIER),
-    indices_parser = gateway_pb2.Instance,
-    partitions_message_mode_parser = True,
-    indices_serializer = StartService_input,
-    partitions_serializer = StartService_input_partitions_v1  # There it's not used.
-))
-
-print('SOLVER -> ', solver)
-
-uri = get_grpc_uri(solver.instance)
-
-solver_stub = api_pb2_grpc.SolverStub(
-    grpc.insecure_channel(
-        uri.ip + ':' + str(uri.port)
-    )
-)
-solver_token = solver.token
-
-print('\n\n memory usage -> ', process.memory_info().rss - start_mem)
-print(' SOLVER SERVICE -> ', uri)
-
-print('\nwait...')
-sleep(10)
-print('\n\nTest it')
-while True:
-    cnf = next(client_grpc(
-        method = random_stub.RandomCnf,
-        indices_parser = api_pb2.Cnf,
+def exec(id: int, solver_hash: str):
+    print(id,'  Go to use ', solver_hash)
+    # Get solver cnf
+    random = next(client_grpc(
+        method = g_stub.StartService,
+        input = service_extended(hash = RANDOM),
+        indices_parser = gateway_pb2.Instance,
         partitions_message_mode_parser = True,
-        input = gateway_pb2.Empty()
+        indices_serializer = StartService_input,
+        partitions_serializer = StartService_input_partitions_v1  # There it's not used.
     ))
 
-    interpretation  = next(client_grpc(
-        method=solver_stub.Solve,
-        input=cnf,
-        indices_serializer = api_pb2.Cnf,
-        indices_parser=api_pb2.Interpretation,
-        partitions_message_mode_parser = True
+    print('random ',id,' -> ', random)
+
+
+
+    uri = get_grpc_uri(random.instance)
+    random_stub = api_pb2_grpc.RandomStub(
+        grpc.insecure_channel(
+            uri.ip + ':' + str(uri.port)
+        )
+    )
+    random_token = random.token
+
+    solver = next(client_grpc(
+        method = g_stub.StartService,
+        input = service_extended(hash = solver_hash),
+        indices_parser = gateway_pb2.Instance,
+        partitions_message_mode_parser = True,
+        indices_serializer = StartService_input,
+        partitions_serializer = StartService_input_partitions_v1  # There it's not used.
     ))
 
-    print('Interpretation -> ', interpretation)
+    print('SOLVER ',id,' -> ', solver)
+
+    uri = get_grpc_uri(solver.instance)
+
+    solver_stub = api_pb2_grpc.SolverStub(
+        grpc.insecure_channel(
+            uri.ip + ':' + str(uri.port)
+        )
+    )
+    solver_token = solver.token
+
+    print(' SOLVER SERVICE ',id,' -> ', uri)
+
+    print('\nwait.',id,' ..')
+    sleep(10)
+    print('\n\nTest it  ',id,' ')
+    for i in range(randint(10, 100)):
+        cnf = next(client_grpc(
+            method = random_stub.RandomCnf,
+            indices_parser = api_pb2.Cnf,
+            partitions_message_mode_parser = True,
+            input = gateway_pb2.Empty()
+        ))
+
+        interpretation  = next(client_grpc(
+            method=solver_stub.Solve,
+            input=cnf,
+            indices_serializer = api_pb2.Cnf,
+            indices_parser=api_pb2.Interpretation,
+            partitions_message_mode_parser = True
+        ))
+
+        print('Interpretation  ',id,' -- ',i,' -> ', interpretation)
+
+    print('Go to stop that  ',id,' .')
+    next(client_grpc(
+        method = g_stub.StopService,
+        input = random_token,
+        indices_parser = gateway_pb2.Empty,
+    ))
+    next(client_grpc(
+        method = g_stub.StopService,
+        input = solver_token,
+        indices_parser = gateway_pb2.Empty,
+    ))
+    print('Stopped ', id)
+
+thread_list = []
+for i in range(int(sys.argv[1])):
+    t = Thread(
+        target = exec,
+        args=(i, choice([FRONTIER, WALL, WALK]))
+    )
+    t.start()
+    thread_list.append(t)
+for t in thread_list:
+    t.join()
+print('\n\n TEST PASSED.')
