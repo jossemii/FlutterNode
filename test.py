@@ -78,7 +78,7 @@ def exec(id: int, solver_hash: str):
 
     solver_stub = api_pb2_grpc.SolverStub(
         grpc.insecure_channel(
-            random_uri.ip + ':' + str(random_uri.port)
+            solver_uri.ip + ':' + str(solver_uri.port)
         )
     )
     solver_token = solver.token
@@ -98,7 +98,9 @@ def exec(id: int, solver_hash: str):
                     input = gateway_pb2.Empty()
                 ))
                 break
-            except: print('ERROR LAUNCHING CNF')
+            except Exception as e: 
+                print('ERROR LAUNCHING CNF', str(e))
+                sleep(2)
 
         while True:
             try:
@@ -110,7 +112,9 @@ def exec(id: int, solver_hash: str):
                     partitions_message_mode_parser = True
                 ))
                 break
-            except: print('ERROR LAUNCHING SOLVER')
+            except Exception as e: 
+                print('ERROR LAUNCHING SOLVER', str(e))
+                sleep(2)
 
         print('Interpretation  ',id,' -- ',i,' -> ', interpretation)
 
