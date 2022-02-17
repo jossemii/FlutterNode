@@ -98,7 +98,7 @@ def exec(id: int, solver_hash: str):
                     input = gateway_pb2.Empty()
                 ))
                 break
-            except: pass
+            except: print('ERROR LAUNCHING CNF')
 
         while True:
             try:
@@ -110,7 +110,7 @@ def exec(id: int, solver_hash: str):
                     partitions_message_mode_parser = True
                 ))
                 break
-            except: pass
+            except: print('ERROR LAUNCHING SOLVER')
 
         print('Interpretation  ',id,' -- ',i,' -> ', interpretation)
 
