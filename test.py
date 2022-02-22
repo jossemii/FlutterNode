@@ -88,7 +88,7 @@ def exec(id: int, solver_hash: str):
     print('\nwait.',id,' ..')
     sleep(10)
     print('\n\nTest it  ',id,' on ', solver_uri)
-    for i in range(randint(10, 100)):
+    for i in range(1):
         while True:
             try:
                 cnf = next(client_grpc(
