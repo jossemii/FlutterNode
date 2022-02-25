@@ -20,10 +20,13 @@ def service_extended(hash):
     )
 
     # Send partition model.
+    """
     yield ( 
         gateway_pb2.ServiceWithMeta,
         Dir('__registry__/'+hash)
-    )
+    )    
+    """
+
 
 def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
     for slot in instance.api.slot:
@@ -36,7 +39,7 @@ def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
 
 
 g_stub = gateway_pb2_grpc.GatewayStub(
-    grpc.insecure_channel('localhost' + ':8090'),
+    grpc.insecure_channel(MOJITO + ':8090'),
 )
 
 def exec(id: int, solver_hash: str):
@@ -121,12 +124,16 @@ def exec(id: int, solver_hash: str):
     print('Go to stop that  ',id,' .', random_token, solver_token)
     next(client_grpc(
         method = g_stub.StopService,
-        input = random_token,
+        input = gateway_pb2.TokenMessage(
+            token = random_token
+        ),
         indices_parser = gateway_pb2.Empty,
     ))
     next(client_grpc(
         method = g_stub.StopService,
-        input = solver_token,
+        input = gateway_pb2.TokenMessage(
+            token = solver_token
+        ),
         indices_parser = gateway_pb2.Empty,
     ))
     print('Stopped ', id)
