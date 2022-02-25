@@ -20,12 +20,10 @@ def service_extended(hash):
     )
 
     # Send partition model.
-    """
     yield ( 
         gateway_pb2.ServiceWithMeta,
         Dir('__registry__/'+hash)
     )    
-    """
 
 
 def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
