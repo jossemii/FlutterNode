@@ -8,7 +8,7 @@ LOCALHOST = 'localhost'
 def compile(partitions_model, partitions_message_mode_parser, repo):
     for b in grpcbigbuffer.client_grpc(
         method = gateway_pb2_grpc.GatewayStub(
-                    grpc.insecure_channel(LOCALHOST+':8090')
+                    grpc.insecure_channel(MOJITO+':8090')
                 ).Compile,
         input = gateway_pb2.CompileInput(
             repo = repo,

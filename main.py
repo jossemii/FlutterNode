@@ -1,5 +1,5 @@
-RANDOM = 'ba2a1ae598c805782adc94fea8d620e5c7ea1cfabc2eeca0e2d7d6adb4e82d0c'
-FRONTIER = 'd99d13e4216d51cee12ec1042a7f3562dbd49952f207e0dbe8d509bfbb081d57'
+RANDOM = '02739b3efd5415ddd5924993936cd2fa4a7d244776fac38a74914573f28934c7'
+FRONTIER = '0e68c5e592569069d88d28411a40b295017ceec3d9854749977d49ab890d0cc4'
 WALL = '0a36361f4244357c82f76243d419595b6dbd50da5a2c49ce3108a0797b192d8b'
 WALK = 'ff9180ceb61fc82f4bccb89a51017dadc352be8f9491c098898db81d933d1b55'
 LISIADO_UNDER = ''
@@ -25,7 +25,7 @@ def generator(hash: str):
     )
 
     # Send partition model.
-    yield ( 
+    yield (
         gateway_pb2.ServiceWithMeta,
         Dir('__registry__/'+hash)
     )

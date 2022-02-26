@@ -8,8 +8,6 @@ from main import FRONTIER, GATEWAY, RANDOM, SHA3_256, MOJITO, WALK, WALL
 from grpcbigbuffer import Dir, client_grpc
 from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions_v1
 
-from main import RANDOM
-
 def service_extended(hash):
     yield gateway_pb2.HashWithConfig(
         hash = celaut_pb2.Any.Metadata.HashTag.Hash(
