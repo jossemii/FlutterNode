@@ -138,7 +138,7 @@ thread_list = []
 for i in range(int(sys.argv[1])):
     t = Thread(
         target = exec,
-        args=(i, choice([FRONTIER, WALL, WALK]))
+        args=(i, choice([FRONTIER]))
     )
     t.start()
     thread_list.append(t)

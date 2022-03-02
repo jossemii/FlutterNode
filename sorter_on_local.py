@@ -1,3 +1,4 @@
+from genericpath import isfile
 from gateway_pb2_grpcbf import StartService_input
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2
 from time import sleep, time
@@ -8,7 +9,7 @@ from grpcbigbuffer import Dir, client_grpc
 
 
 g_stub = gateway_pb2_grpc.GatewayStub(
-    grpc.insecure_channel('localhost' + ':8090'),
+    grpc.insecure_channel(MOJITO + ':8090'),
 )
 
 print('Get new services....')
@@ -21,12 +22,12 @@ print('Tenemos clasificador. ', c_stub)
 
 print('Subiendo solvers al clasificador.')
 # Añade solvers.
-for s in [FRONTIER, WALL, WALK]:
-    print('     ', s)
+for s in [FRONTIER]:
+    print('     ', s, isfile('__registry__/'+s))
     next(client_grpc(
         method = c_stub.UploadSolver,
         input = (gateway_pb2.ServiceWithMeta, Dir('__registry__/'+s)),
-        indices_parser = api_pb2.Empty
+        indices_parser = api_pb2.Empty()
     ))
 
 # Get random cnf
@@ -56,7 +57,7 @@ try:
     next(client_grpc(
         method=c_stub.AddDataSet,
         input=dataset,
-        indices_parser=api_pb2.Empty
+        indices_parser=api_pb2.Empty()
     ))
     print('Dataset añadido.')
 except Exception as e:
@@ -81,7 +82,7 @@ if True:#if input("\nGo to train? (y/n)")=='y':
     next(client_grpc(
         method=c_stub.StartTrain,
         input=api_pb2.Empty(),
-        indices_parser = api_pb2.Empty
+        indices_parser = api_pb2.Empty()
     ))
 
     print('Wait to train the model ...')
@@ -130,7 +131,7 @@ print('Termina el entrenamiento')
 next(client_grpc(
     method=c_stub.StopTrain,
     input=api_pb2.Empty,
-    indices_parser=api_pb2.Empty
+    indices_parser=api_pb2.Empty()
 ))
 
 # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
@@ -180,7 +181,7 @@ sleep(700)
 next(client_grpc(
     method=g_stub.StopService,
     input=gateway_pb2.TokenMessage(token=random_cnf_service.token),
-    indices_parser=api_pb2.Empty
+    indices_parser=api_pb2.Empty()
 ))
 print('All good?')
 
