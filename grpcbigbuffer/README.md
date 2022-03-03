@@ -1,1 +1,1 @@
-A simple command-line application.
+Grpcbb for dart.
