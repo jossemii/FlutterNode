@@ -87,7 +87,7 @@ if True:#if input("\nGo to train? (y/n)")=='y':
     for i in range(50): 
         for j in range(5):
             print(' time ', i, j)
-            sleep(100)
+            sleep(10)
         
         print('Obtiene el data_set.')
         dataset = next(client_grpc(
@@ -111,16 +111,14 @@ if True:#if input("\nGo to train? (y/n)")=='y':
         print('\n ---- ', i)
         print(' SOLVING CNF ...')
         t = time()
-        try:
-            interpretation = next(client_grpc(
-                method=c_stub.Solve,
-                indices_parser={1: api_pb2.Interpretation, 2: api_pb2.Empty},
-                partitions_message_mode_parser=True,
-                input=cnf,
-                indices_serializer=api_pb2.Cnf
-            ))
-            print(interpretation, str(time()-t)+' OKAY THE INTERPRETATION WAS ')
-        except Exception: print('tensor is not ready yet.')
+        interpretation = next(client_grpc(
+            method=c_stub.Solve,
+            indices_parser={1: api_pb2.Interpretation, 2: api_pb2.Empty},
+            partitions_message_mode_parser=True,
+            input=cnf,
+            indices_serializer=api_pb2.Cnf
+        ))
+        print(interpretation, str(time()-t)+' OKAY THE INTERPRETATION WAS ') if type(interpretation) != api_pb2.Empty else print('Tensor is not ready yet.')
 
     sleep(60)
 
