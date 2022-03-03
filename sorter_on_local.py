@@ -27,7 +27,7 @@ for s in [FRONTIER]:
     next(client_grpc(
         method = c_stub.UploadSolver,
         input = (gateway_pb2.ServiceWithMeta, Dir('__registry__/'+s)),
-        indices_parser = api_pb2.Empty()
+        indices_parser = api_pb2.Empty
     ))
 
 # Get random cnf
@@ -57,7 +57,7 @@ try:
     next(client_grpc(
         method=c_stub.AddDataSet,
         input=dataset,
-        indices_parser=api_pb2.Empty()
+        indices_parser=api_pb2.Empty
     ))
     print('Dataset añadido.')
 except Exception as e:
@@ -71,10 +71,8 @@ dataset = next(client_grpc(
     indices_parser = solvers_dataset_pb2.DataSet,
     partitions_message_mode_parser = True
 ))
-print('\n\DATASET -> ', dataset)
 open('dataset.bin', 'wb').write(dataset.SerializeToString())
 
-exit()
 if True:#if input("\nGo to train? (y/n)")=='y':
     print('Iniciando entrenamiento...')
     
@@ -82,19 +80,19 @@ if True:#if input("\nGo to train? (y/n)")=='y':
     next(client_grpc(
         method=c_stub.StartTrain,
         input=api_pb2.Empty(),
-        indices_parser = api_pb2.Empty()
+        indices_parser = api_pb2.Empty
     ))
 
     print('Wait to train the model ...')
     for i in range(50): 
-        for j in range(10):
+        for j in range(5):
             print(' time ', i, j)
-            sleep(200)
+            sleep(100)
         
         print('Obtiene el data_set.')
         dataset = next(client_grpc(
             method=c_stub.GetDataSet,
-            input=api_pb2.Empty,
+            input=api_pb2.Empty(),
             indices_parser=api_pb2.solvers__dataset__pb2.DataSet,
             partitions_message_mode_parser=True
         ))
@@ -116,13 +114,13 @@ if True:#if input("\nGo to train? (y/n)")=='y':
         try:
             interpretation = next(client_grpc(
                 method=c_stub.Solve,
-                indices_parser=api_pb2.Interpretation,
+                indices_parser={1: api_pb2.Interpretation, 2: api_pb2.Empty},
                 partitions_message_mode_parser=True,
                 input=cnf,
                 indices_serializer=api_pb2.Cnf
             ))
             print(interpretation, str(time()-t)+' OKAY THE INTERPRETATION WAS ')
-        except StopIteration: print('tensor is not ready yet.')
+        except Exception: print('tensor is not ready yet.')
 
     sleep(60)
 
@@ -130,8 +128,8 @@ print('Termina el entrenamiento')
 # En caso de que estubiera entrenando lo finaliza.
 next(client_grpc(
     method=c_stub.StopTrain,
-    input=api_pb2.Empty,
-    indices_parser=api_pb2.Empty()
+    input=api_pb2.Empty(),
+    indices_parser=api_pb2.Empty
 ))
 
 # Comprueba si sabe generar una interpretacion (sin tener ni idea de que tal
@@ -139,7 +137,7 @@ next(client_grpc(
 def final_test(c_stub, r_stub, i, j):
     cnf = next(client_grpc(
         method=r_stub.RandomCnf,
-        input=api_pb2.Empty,
+        input=api_pb2.Empty(),
         indices_parser=api_pb2.Cnf,
         partitions_message_mode_parser=True
     ))
@@ -166,7 +164,7 @@ for i in range(1):
 print('Obtiene el data_set.')
 dataset = next(client_grpc(
     method=c_stub.GetDataSet,
-    input=api_pb2.Empty,
+    input=api_pb2.Empty(),
     indices_parser=api_pb2.solvers__dataset__pb2.DataSet,
     partitions_message_mode_parser=True
 ))
@@ -181,7 +179,7 @@ sleep(700)
 next(client_grpc(
     method=g_stub.StopService,
     input=gateway_pb2.TokenMessage(token=random_cnf_service.token),
-    indices_parser=api_pb2.Empty()
+    indices_parser=api_pb2.Empty
 ))
 print('All good?')
 
