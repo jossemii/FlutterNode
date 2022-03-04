@@ -24,11 +24,12 @@ print('Subiendo solvers al clasificador.')
 # Añade solvers.
 for s in [FRONTIER]:
     print('     ', s, isfile('__registry__/'+s))
-    next(client_grpc(
+    empty_message = next(client_grpc(
         method = c_stub.UploadSolver,
         input = (gateway_pb2.ServiceWithMeta, Dir('__registry__/'+s)),
         indices_parser = api_pb2.Empty
     ))
+    print('\nEmpty message -> ', empty_message)
 
 # Get random cnf
 random_cnf_service = next(client_grpc(
@@ -114,11 +115,11 @@ if True:#if input("\nGo to train? (y/n)")=='y':
         interpretation = next(client_grpc(
             method=c_stub.Solve,
             indices_parser={1: api_pb2.Interpretation, 2: api_pb2.Empty},
-            partitions_message_mode_parser=True,
+            partitions_message_mode_parser={1: True, 2: False},
             input=cnf,
             indices_serializer=api_pb2.Cnf
         ))
-        print(interpretation, str(time()-t)+' OKAY THE INTERPRETATION WAS ') if type(interpretation) != api_pb2.Empty else print('Tensor is not ready yet.')
+        print(interpretation, str(time()-t)+' OKAY THE INTERPRETATION WAS ') if type(interpretation) != str else print('Tensor is not ready yet.')
 
     sleep(60)
 
