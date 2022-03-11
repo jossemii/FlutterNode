@@ -86,9 +86,9 @@ if True:#if input("\nGo to train? (y/n)")=='y':
 
     print('Wait to train the model ...')
     for i in range(50): 
-        for j in range(5):
+        for j in range(50):
             print(' time ', i, j)
-            sleep(10)
+            sleep(200)
         
         print('Obtiene el data_set.')
         dataset = next(client_grpc(
