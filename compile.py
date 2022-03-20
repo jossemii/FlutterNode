@@ -25,6 +25,7 @@ for b in compile(
     partitions_message_mode_parser = [True, False] if not len(sys.argv)>2 else [True, False, False],
     repo = sys.argv[1]
 ): 
+    print('b -> ', b)
     if b is gateway_pb2.CompileOutput: continue
     elif not id: 
         id = b.hex()

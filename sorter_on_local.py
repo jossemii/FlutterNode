@@ -19,6 +19,18 @@ c_stub = api_pb2_grpc.SolverStub(
     )
 
 print('Tenemos clasificador. ', c_stub)
+try:
+    dataset = solvers_dataset_pb2.DataSet()
+    dataset.ParseFromString(open('dataset.bin', 'rb').read())
+    next(client_grpc(
+        method=c_stub.AddDataSet,
+        input=dataset,
+        indices_parser=api_pb2.Empty
+    ))
+    print('Dataset añadido.')
+except Exception as e:
+    print('No tenemos dataset.', str(e))
+    pass
 
 print('Subiendo solvers al clasificador.')
 # Añade solvers.
@@ -29,7 +41,6 @@ for s in [FRONTIER]:
         input = (gateway_pb2.ServiceWithMeta, Dir('__registry__/'+s)),
         indices_parser = api_pb2.Empty
     ))
-    print('\nEmpty message -> ', empty_message)
 
 # Get random cnf
 random_cnf_service = next(client_grpc(
@@ -49,32 +60,7 @@ r_stub = api_pb2_grpc.RandomStub(
 
 print('Tenemos random. ', r_stub)
 
-
-
-#sleep(10) # Espera a que el servidor se levante.
-try:
-    dataset = solvers_dataset_pb2.DataSet()
-    dataset.ParseFromString(open('dataset.bin', 'rb').read())
-    next(client_grpc(
-        method=c_stub.AddDataSet,
-        input=dataset,
-        indices_parser=api_pb2.Empty
-    ))
-    print('Dataset añadido.')
-except Exception as e:
-    print('No tenemos dataset.', str(e))
-    pass
-
-print('\nObtiene el data_set.')
-dataset = next(client_grpc(
-    method=c_stub.GetDataSet,
-    input=api_pb2.Empty(),
-    indices_parser = solvers_dataset_pb2.DataSet,
-    partitions_message_mode_parser = True
-))
-open('dataset.bin', 'wb').write(dataset.SerializeToString())
-
-if True:#if input("\nGo to train? (y/n)")=='y':
+if True:  #if input("\nGo to train? (y/n)")=='y':
     print('Iniciando entrenamiento...')
     
     # Inicia el entrenamiento.
@@ -85,10 +71,10 @@ if True:#if input("\nGo to train? (y/n)")=='y':
     ))
 
     print('Wait to train the model ...')
-    for i in range(50): 
-        for j in range(50):
+    for i in range(5): 
+        for j in range(5):
             print(' time ', i, j)
-            sleep(200)
+            sleep(60)
         
         print('Obtiene el data_set.')
         dataset = next(client_grpc(
@@ -97,7 +83,6 @@ if True:#if input("\nGo to train? (y/n)")=='y':
             indices_parser=api_pb2.solvers__dataset__pb2.DataSet,
             partitions_message_mode_parser=True
         ))
-        print('\n\DATASET -> ', dataset)
         open('dataset.bin', 'wb').write(dataset.SerializeToString())
 
         cnf = next(client_grpc(
@@ -167,12 +152,11 @@ dataset = next(client_grpc(
     indices_parser=api_pb2.solvers__dataset__pb2.DataSet,
     partitions_message_mode_parser=True
 ))
-print('\n\DATASET -> ', dataset)
 open('dataset.bin', 'wb').write(dataset.SerializeToString())
 
 
 print('waiting for kill solvers ...')
-sleep(700)
+sleep(120)
 
 # Stop Random cnf service.
 next(client_grpc(
@@ -181,7 +165,3 @@ next(client_grpc(
     indices_parser=api_pb2.Empty
 ))
 print('All good?')
-
-with open('script_data.json', 'w') as file:
-    print('Clearing data ...')
-    json.dump("", file)
