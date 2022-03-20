@@ -35,7 +35,7 @@ message ServiceWithConfig { // S^C
 }
 
 message CompileInput {
-    string repo = 1;
+    bytes repo = 1;
     repeated buffer.Buffer.Head.Partition partitions_model = 2;
 }
 
