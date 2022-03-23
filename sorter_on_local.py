@@ -32,6 +32,7 @@ except Exception as e:
     print('No tenemos dataset.', str(e))
     pass
 
+sleep
 print('Subiendo solvers al clasificador.')
 # Añade solvers.
 for s in [FRONTIER]:
