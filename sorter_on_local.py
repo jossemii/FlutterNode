@@ -25,15 +25,12 @@ try:
     next(client_grpc(
         method=c_stub.AddDataSet,
         input=dataset,
-        partitions_message_mode_parser=True,
-        indices_parser=api_pb2.Empty
     ))
     print('Dataset añadido.') 
 except Exception as e:
     print('No tenemos dataset.', str(e))
     pass
 
-sleep(10)
 print('Subiendo solvers al clasificador.')
 # Añade solvers.
 for s in [FRONTIER]:
@@ -44,17 +41,15 @@ for s in [FRONTIER]:
     ))
 
 print('tenemos el solver.')
-sleep(10)
-print('fkdajfkldajflk')
 # Get random cnf
 random_cnf_service = next(client_grpc(
     method = g_stub.StartService,
     indices_parser = gateway_pb2.Instance,
     input = generator(hash = RANDOM),
-    indices_serializer = StartService_input
+    indices_serializer = StartService_input,
+    partitions_message_mode_parser = True
 ))
 
-sleep(10)
 print(random_cnf_service)
 uri=random_cnf_service.instance.uri_slot[0].uri[0]
 r_uri = uri.ip +':'+ str(uri.port)
@@ -64,7 +59,6 @@ r_stub = api_pb2_grpc.RandomStub(
 
 print('Tenemos random. ', r_stub)
 
-sleep(10)
 if True:  #if input("\nGo to train? (y/n)")=='y':
     print('Iniciando entrenamiento...')
     
