@@ -4,6 +4,7 @@ __version__ = 'dev'
 CHUNK_SIZE = 1024 * 1024  # 1MB
 MAX_DIR = 999999999
 import os, gc, itertools, sys
+from re import sub
 
 from google import protobuf
 import buffer_pb2
@@ -363,6 +364,7 @@ def parse_from_buffer(
             for i, partition in enumerate(local_partitions_model):
                 if i+1 == len(local_partitions_model): 
                     aux_object = main_object
+                    del main_object
                 else:
                     aux_object = pf_object()
                     aux_object.CopyFrom(main_object)
@@ -376,9 +378,17 @@ def parse_from_buffer(
                                 else bytes(aux_object) if type(aux_object) is not str else bytes(aux_object, 'utf8')
                         )
                     del aux_object
-                    yield filename
+                    if i+1 == len(local_partitions_model): 
+                        last = filename
+                    else:
+                        yield filename
                 else:
-                    yield aux_object
+                    if i+1 == len(local_partitions_model): 
+                        last = aux_object
+                        del aux_object
+                    else:
+                        yield aux_object
+        yield last  # Necesario para evitar realizar una última iteración del conversor para salir del mem_manager, y en su uso no es necesario esa última iteración porque se conoce local_partitions.
 
 
     for buffer in request_iterator:
