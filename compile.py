@@ -1,3 +1,4 @@
+from buffer_pb2 import Buffer
 from gateway_pb2_grpcbf import Compile_output_partitions_v1, Compile_output_partitions_v2
 import grpcbigbuffer, gateway_pb2_grpc, grpc, gateway_pb2, sys, os
 
@@ -10,9 +11,9 @@ def compile(partitions_model, partitions_message_mode_parser, repo):
                     grpc.insecure_channel(MOJITO+':8090')
                 ).Compile,
         input = gateway_pb2.CompileInput(
-            repo = repo,
-            partitions_model = partitions_model,
-        ),
+                    partitions_model = partitions_model,
+                    repo = open(repo, 'rb').read()
+                ),
         indices_parser = gateway_pb2.CompileOutput,
         partitions_parser = partitions_model,
         partitions_message_mode_parser = partitions_message_mode_parser
@@ -22,7 +23,7 @@ id = None
 for b in compile(
     partitions_model = Compile_output_partitions_v1 if not len(sys.argv)>2 else Compile_output_partitions_v2,
     partitions_message_mode_parser = [True, False] if not len(sys.argv)>2 else [True, False, False],
-    repo = sys.argv[1]
+    repo = 'git.zip'
 ): 
     if b is gateway_pb2.CompileOutput: continue
     elif not id: 

@@ -69,7 +69,7 @@ if True:  #if input("\nGo to train? (y/n)")=='y':
 
     print('Wait to train the model ...')
     for i in range(5): 
-        for j in range(5):
+        for j in range(60):
             print(' time ', i, j)
             sleep(60)
         
