@@ -13,6 +13,7 @@ _sym_db = _symbol_database.Default()
 
 import celaut_pb2 as celaut__pb2
 import buffer_pb2 as buffer__pb2
+import compile_pb2 as compile__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,36 +22,11 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\rgateway.proto\x12\x07gateway\x1a\x0c\x63\x65laut.proto\x1a\x0c\x62uffer.proto\"\x07\n\x05\x45mpty\"\x1d\n\x0cTokenMessage\x12\r\n\x05token\x18\x01 \x01(\t\"\x1b\n\x0b\x43ostMessage\x12\x0c\n\x04\x63ost\x18\x01 \x01(\x05\"\x90\x01\n\x08Instance\x12\x30\n\rinstance_meta\x18\x01 \x01(\x0b\x32\x14.celaut.Any.MetadataH\x00\x88\x01\x01\x12\"\n\x08instance\x18\x02 \x01(\x0b\x32\x10.celaut.Instance\x12\x12\n\x05token\x18\x03 \x01(\tH\x01\x88\x01\x01\x42\x10\n\x0e_instance_metaB\x08\n\x06_token\"[\n\x0fServiceWithMeta\x12&\n\x08metadata\x18\x01 \x01(\x0b\x32\x14.celaut.Any.Metadata\x12 \n\x07service\x18\x02 \x01(\x0b\x32\x0f.celaut.Service\"h\n\x0eHashWithConfig\x12/\n\x04hash\x18\x01 \x01(\x0b\x32!.celaut.Any.Metadata.HashTag.Hash\x12%\n\x06\x63onfig\x18\x03 \x01(\x0b\x32\x15.celaut.Configuration\"e\n\x11ServiceWithConfig\x12)\n\x07service\x18\x02 \x01(\x0b\x32\x18.gateway.ServiceWithMeta\x12%\n\x06\x63onfig\x18\x03 \x01(\x0b\x32\x15.celaut.Configuration\"U\n\x0c\x43ompileInput\x12\x0c\n\x04repo\x18\x01 \x01(\x0c\x12\x37\n\x10partitions_model\x18\x02 \x03(\x0b\x32\x1d.buffer.Buffer.Head.Partition\"F\n\rCompileOutput\x12\n\n\x02id\x18\x01 \x01(\x0c\x12)\n\x07service\x18\x02 \x01(\x0b\x32\x18.gateway.ServiceWithMeta2\xf5\x02\n\x07Gateway\x12\x34\n\x0cStartService\x12\x0e.buffer.Buffer\x1a\x0e.buffer.Buffer\"\x00(\x01\x30\x01\x12\x33\n\x0bStopService\x12\x0e.buffer.Buffer\x1a\x0e.buffer.Buffer\"\x00(\x01\x30\x01\x12.\n\x06Hynode\x12\x0e.buffer.Buffer\x1a\x0e.buffer.Buffer\"\x00(\x01\x30\x01\x12/\n\x07GetFile\x12\x0e.buffer.Buffer\x1a\x0e.buffer.Buffer\"\x00(\x01\x30\x01\x12/\n\x07\x43ompile\x12\x0e.buffer.Buffer\x1a\x0e.buffer.Buffer\"\x00(\x01\x30\x01\x12\x35\n\rGetServiceTar\x12\x0e.buffer.Buffer\x1a\x0e.buffer.Buffer\"\x00(\x01\x30\x01\x12\x36\n\x0eGetServiceCost\x12\x0e.buffer.Buffer\x1a\x0e.buffer.Buffer\"\x00(\x01\x30\x01\x62\x06proto3'
+  serialized_pb=b'\n\rgateway.proto\x12\x07gateway\x1a\x0c\x63\x65laut.proto\x1a\x0c\x62uffer.proto\x1a\rcompile.proto\"\x1d\n\x0cTokenMessage\x12\r\n\x05token\x18\x01 \x01(\t\"\x1b\n\x0b\x43ostMessage\x12\x0c\n\x04\x63ost\x18\x01 \x01(\x05\"\x90\x01\n\x08Instance\x12\x30\n\rinstance_meta\x18\x01 \x01(\x0b\x32\x14.celaut.Any.MetadataH\x00\x88\x01\x01\x12\"\n\x08instance\x18\x02 \x01(\x0b\x32\x10.celaut.Instance\x12\x12\n\x05token\x18\x03 \x01(\tH\x01\x88\x01\x01\x42\x10\n\x0e_instance_metaB\x08\n\x06_token\"[\n\x0fServiceWithMeta\x12&\n\x08metadata\x18\x01 \x01(\x0b\x32\x14.celaut.Any.Metadata\x12 \n\x07service\x18\x02 \x01(\x0b\x32\x0f.celaut.Service\"\xde\x01\n\x0eHashWithConfig\x12/\n\x04hash\x18\x01 \x01(\x0b\x32!.celaut.Any.Metadata.HashTag.Hash\x12%\n\x06\x63onfig\x18\x03 \x01(\x0b\x32\x15.celaut.Configuration\x12*\n\nmin_sysreq\x18\x04 \x01(\x0b\x32\x11.celaut.SysparamsH\x00\x88\x01\x01\x12*\n\nmax_sysreq\x18\x05 \x01(\x0b\x32\x11.celaut.SysparamsH\x01\x88\x01\x01\x42\r\n\x0b_min_sysreqB\r\n\x0b_max_sysreq\"\xdb\x01\n\x11ServiceWithConfig\x12)\n\x07service\x18\x02 \x01(\x0b\x32\x18.gateway.ServiceWithMeta\x12%\n\x06\x63onfig\x18\x03 \x01(\x0b\x32\x15.celaut.Configuration\x12*\n\nmin_sysreq\x18\x04 \x01(\x0b\x32\x11.celaut.SysparamsH\x00\x88\x01\x01\x12*\n\nmax_sysreq\x18\x05 \x01(\x0b\x32\x11.celaut.SysparamsH\x01\x88\x01\x01\x42\r\n\x0b_min_sysreqB\r\n\x0b_max_sysreq\"U\n\x0c\x43ompileInput\x12\x0c\n\x04repo\x18\x01 \x01(\x0c\x12\x37\n\x10partitions_model\x18\x02 \x03(\x0b\x32\x1d.buffer.Buffer.Head.Partition\"F\n\rCompileOutput\x12\n\n\x02id\x18\x01 \x01(\x0c\x12)\n\x07service\x18\x02 \x01(\x0b\x32\x18.compile.ServiceWithMeta2\xf5\x02\n\x07Gateway\x12\x34\n\x0cStartService\x12\x0e.buffer.Buffer\x1a\x0e.buffer.Buffer\"\x00(\x01\x30\x01\x12\x33\n\x0bStopService\x12\x0e.buffer.Buffer\x1a\x0e.buffer.Buffer\"\x00(\x01\x30\x01\x12.\n\x06Hynode\x12\x0e.buffer.Buffer\x1a\x0e.buffer.Buffer\"\x00(\x01\x30\x01\x12/\n\x07GetFile\x12\x0e.buffer.Buffer\x1a\x0e.buffer.Buffer\"\x00(\x01\x30\x01\x12/\n\x07\x43ompile\x12\x0e.buffer.Buffer\x1a\x0e.buffer.Buffer\"\x00(\x01\x30\x01\x12\x35\n\rGetServiceTar\x12\x0e.buffer.Buffer\x1a\x0e.buffer.Buffer\"\x00(\x01\x30\x01\x12\x36\n\x0eGetServiceCost\x12\x0e.buffer.Buffer\x1a\x0e.buffer.Buffer\"\x00(\x01\x30\x01\x62\x06proto3'
   ,
-  dependencies=[celaut__pb2.DESCRIPTOR,buffer__pb2.DESCRIPTOR,])
+  dependencies=[celaut__pb2.DESCRIPTOR,buffer__pb2.DESCRIPTOR,compile__pb2.DESCRIPTOR,])
 
 
-
-
-_EMPTY = _descriptor.Descriptor(
-  name='Empty',
-  full_name='gateway.Empty',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  create_key=_descriptor._internal_create_key,
-  fields=[
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=54,
-  serialized_end=61,
-)
 
 
 _TOKENMESSAGE = _descriptor.Descriptor(
@@ -80,8 +56,8 @@ _TOKENMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=63,
-  serialized_end=92,
+  serialized_start=69,
+  serialized_end=98,
 )
 
 
@@ -112,8 +88,8 @@ _COSTMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=94,
-  serialized_end=121,
+  serialized_start=100,
+  serialized_end=127,
 )
 
 
@@ -168,8 +144,8 @@ _INSTANCE = _descriptor.Descriptor(
       create_key=_descriptor._internal_create_key,
     fields=[]),
   ],
-  serialized_start=124,
-  serialized_end=268,
+  serialized_start=130,
+  serialized_end=274,
 )
 
 
@@ -207,8 +183,8 @@ _SERVICEWITHMETA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=270,
-  serialized_end=361,
+  serialized_start=276,
+  serialized_end=367,
 )
 
 
@@ -234,6 +210,20 @@ _HASHWITHCONFIG = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='min_sysreq', full_name='gateway.HashWithConfig.min_sysreq', index=2,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='max_sysreq', full_name='gateway.HashWithConfig.max_sysreq', index=3,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -245,9 +235,19 @@ _HASHWITHCONFIG = _descriptor.Descriptor(
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
+    _descriptor.OneofDescriptor(
+      name='_min_sysreq', full_name='gateway.HashWithConfig._min_sysreq',
+      index=0, containing_type=None,
+      create_key=_descriptor._internal_create_key,
+    fields=[]),
+    _descriptor.OneofDescriptor(
+      name='_max_sysreq', full_name='gateway.HashWithConfig._max_sysreq',
+      index=1, containing_type=None,
+      create_key=_descriptor._internal_create_key,
+    fields=[]),
   ],
-  serialized_start=363,
-  serialized_end=467,
+  serialized_start=370,
+  serialized_end=592,
 )
 
 
@@ -273,6 +273,20 @@ _SERVICEWITHCONFIG = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='min_sysreq', full_name='gateway.ServiceWithConfig.min_sysreq', index=2,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='max_sysreq', full_name='gateway.ServiceWithConfig.max_sysreq', index=3,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -284,9 +298,19 @@ _SERVICEWITHCONFIG = _descriptor.Descriptor(
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
+    _descriptor.OneofDescriptor(
+      name='_min_sysreq', full_name='gateway.ServiceWithConfig._min_sysreq',
+      index=0, containing_type=None,
+      create_key=_descriptor._internal_create_key,
+    fields=[]),
+    _descriptor.OneofDescriptor(
+      name='_max_sysreq', full_name='gateway.ServiceWithConfig._max_sysreq',
+      index=1, containing_type=None,
+      create_key=_descriptor._internal_create_key,
+    fields=[]),
   ],
-  serialized_start=469,
-  serialized_end=570,
+  serialized_start=595,
+  serialized_end=814,
 )
 
 
@@ -324,8 +348,8 @@ _COMPILEINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=572,
-  serialized_end=657,
+  serialized_start=816,
+  serialized_end=901,
 )
 
 
@@ -363,8 +387,8 @@ _COMPILEOUTPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=659,
-  serialized_end=729,
+  serialized_start=903,
+  serialized_end=973,
 )
 
 _INSTANCE.fields_by_name['instance_meta'].message_type = celaut__pb2._ANY_METADATA
@@ -379,11 +403,26 @@ _SERVICEWITHMETA.fields_by_name['metadata'].message_type = celaut__pb2._ANY_META
 _SERVICEWITHMETA.fields_by_name['service'].message_type = celaut__pb2._SERVICE
 _HASHWITHCONFIG.fields_by_name['hash'].message_type = celaut__pb2._ANY_METADATA_HASHTAG_HASH
 _HASHWITHCONFIG.fields_by_name['config'].message_type = celaut__pb2._CONFIGURATION
+_HASHWITHCONFIG.fields_by_name['min_sysreq'].message_type = celaut__pb2._SYSPARAMS
+_HASHWITHCONFIG.fields_by_name['max_sysreq'].message_type = celaut__pb2._SYSPARAMS
+_HASHWITHCONFIG.oneofs_by_name['_min_sysreq'].fields.append(
+  _HASHWITHCONFIG.fields_by_name['min_sysreq'])
+_HASHWITHCONFIG.fields_by_name['min_sysreq'].containing_oneof = _HASHWITHCONFIG.oneofs_by_name['_min_sysreq']
+_HASHWITHCONFIG.oneofs_by_name['_max_sysreq'].fields.append(
+  _HASHWITHCONFIG.fields_by_name['max_sysreq'])
+_HASHWITHCONFIG.fields_by_name['max_sysreq'].containing_oneof = _HASHWITHCONFIG.oneofs_by_name['_max_sysreq']
 _SERVICEWITHCONFIG.fields_by_name['service'].message_type = _SERVICEWITHMETA
 _SERVICEWITHCONFIG.fields_by_name['config'].message_type = celaut__pb2._CONFIGURATION
+_SERVICEWITHCONFIG.fields_by_name['min_sysreq'].message_type = celaut__pb2._SYSPARAMS
+_SERVICEWITHCONFIG.fields_by_name['max_sysreq'].message_type = celaut__pb2._SYSPARAMS
+_SERVICEWITHCONFIG.oneofs_by_name['_min_sysreq'].fields.append(
+  _SERVICEWITHCONFIG.fields_by_name['min_sysreq'])
+_SERVICEWITHCONFIG.fields_by_name['min_sysreq'].containing_oneof = _SERVICEWITHCONFIG.oneofs_by_name['_min_sysreq']
+_SERVICEWITHCONFIG.oneofs_by_name['_max_sysreq'].fields.append(
+  _SERVICEWITHCONFIG.fields_by_name['max_sysreq'])
+_SERVICEWITHCONFIG.fields_by_name['max_sysreq'].containing_oneof = _SERVICEWITHCONFIG.oneofs_by_name['_max_sysreq']
 _COMPILEINPUT.fields_by_name['partitions_model'].message_type = buffer__pb2._BUFFER_HEAD_PARTITION
-_COMPILEOUTPUT.fields_by_name['service'].message_type = _SERVICEWITHMETA
-DESCRIPTOR.message_types_by_name['Empty'] = _EMPTY
+_COMPILEOUTPUT.fields_by_name['service'].message_type = compile__pb2._SERVICEWITHMETA
 DESCRIPTOR.message_types_by_name['TokenMessage'] = _TOKENMESSAGE
 DESCRIPTOR.message_types_by_name['CostMessage'] = _COSTMESSAGE
 DESCRIPTOR.message_types_by_name['Instance'] = _INSTANCE
@@ -393,13 +432,6 @@ DESCRIPTOR.message_types_by_name['ServiceWithConfig'] = _SERVICEWITHCONFIG
 DESCRIPTOR.message_types_by_name['CompileInput'] = _COMPILEINPUT
 DESCRIPTOR.message_types_by_name['CompileOutput'] = _COMPILEOUTPUT
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
-
-Empty = _reflection.GeneratedProtocolMessageType('Empty', (_message.Message,), {
-  'DESCRIPTOR' : _EMPTY,
-  '__module__' : 'gateway_pb2'
-  # @@protoc_insertion_point(class_scope:gateway.Empty)
-  })
-_sym_db.RegisterMessage(Empty)
 
 TokenMessage = _reflection.GeneratedProtocolMessageType('TokenMessage', (_message.Message,), {
   'DESCRIPTOR' : _TOKENMESSAGE,
@@ -466,8 +498,8 @@ _GATEWAY = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=732,
-  serialized_end=1105,
+  serialized_start=976,
+  serialized_end=1349,
   methods=[
   _descriptor.MethodDescriptor(
     name='StartService',

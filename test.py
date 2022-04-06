@@ -43,7 +43,7 @@ def exec(id: int, solver_hash: str):
     # Get solver cnf
     random = next(client_grpc(
         method = g_stub.StartService,
-        input = service_extended(hash = REGRESION),
+        input = service_extended(hash = RANDOM),
         indices_parser = gateway_pb2.Instance,
         partitions_message_mode_parser = True,
         indices_serializer = StartService_input,
@@ -138,7 +138,7 @@ thread_list = []
 for i in range(int(sys.argv[1])):
     t = Thread(
         target = exec,
-        args=(i, choice([FRONTIER]))
+        args=(i, choice([FRONTIER, WALL, WALK]))
     )
     t.start()
     thread_list.append(t)
