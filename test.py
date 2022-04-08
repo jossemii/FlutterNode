@@ -2,7 +2,7 @@ from random import randint, random, choice
 import sys
 from threading import Thread
 from time import sleep
-import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2_grpc, api_pb2, celaut_pb2
+import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2_grpc, api_pb2, celaut_pb2, buffer_pb2
 
 from main import FRONTIER, GATEWAY, RANDOM, REGRESION, SHA3_256, MOJITO, WALK, WALL
 from grpcbigbuffer import Dir, client_grpc
@@ -14,7 +14,10 @@ def service_extended(hash):
             type = bytes.fromhex(SHA3_256),
             value = bytes.fromhex(hash)
         ),
-        config = celaut_pb2.Configuration()
+        config = celaut_pb2.Configuration(),
+        min_sysreq = celaut_pb2.Sysparams(
+            mem_limit = randint(40, 160)*pow(10, 6)
+        )
     )
 
     # Send partition model.
@@ -94,7 +97,7 @@ def exec(id: int, solver_hash: str):
                     method = random_stub.RandomCnf,
                     indices_parser = api_pb2.Cnf,
                     partitions_message_mode_parser = True,
-                    input = gateway_pb2.Empty()
+                    input = buffer_pb2.Empty()
                 ))
                 break
             except Exception as e: 
@@ -116,21 +119,21 @@ def exec(id: int, solver_hash: str):
                 sleep(2)
 
         print('Interpretation  ',id,' -- ',i,' -> ', interpretation)
-
+    sleep(30)
     print('Go to stop that  ',id,' .', random_token, solver_token)
     next(client_grpc(
         method = g_stub.StopService,
         input = gateway_pb2.TokenMessage(
             token = random_token
         ),
-        indices_parser = gateway_pb2.Empty,
+        indices_parser = buffer_pb2.Empty,
     ))
     next(client_grpc(
         method = g_stub.StopService,
         input = gateway_pb2.TokenMessage(
             token = solver_token
         ),
-        indices_parser = gateway_pb2.Empty,
+        indices_parser = buffer_pb2.Empty,
     ))
     print('Stopped ', id)
 
@@ -138,7 +141,7 @@ thread_list = []
 for i in range(int(sys.argv[1])):
     t = Thread(
         target = exec,
-        args=(i, choice([FRONTIER, WALL, WALK]))
+        args=(i, choice([WALL]))
     )
     t.start()
     thread_list.append(t)

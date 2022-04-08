@@ -9,6 +9,6 @@ python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. gateway.prot
 # solvers_dataset
 python3 -m grpc_tools.protoc -I. --python_out=. solvers_dataset.proto --experimental_allow_proto3_optional &&
 # buffer
-python3 -m grpc_tools.protoc -I. --python_out=. buffer.proto --experimental_allow_proto3_optional
+python3 -m grpc_tools.protoc -I. --python_out=. buffer.proto --experimental_allow_proto3_optional &&
 # compile
 python3 -m grpc_tools.protoc -I. --python_out=. compile.proto --experimental_allow_proto3_optional 
