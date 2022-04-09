@@ -23,7 +23,7 @@ id = None
 for b in compile(
     partitions_model = Compile_output_partitions_v1 if not len(sys.argv)>2 else Compile_output_partitions_v2,
     partitions_message_mode_parser = [True, False] if not len(sys.argv)>2 else [True, False, False],
-    repo = 'git.zip'
+    repo = '.service.zip'
 ): 
     if b is gateway_pb2.CompileOutput: continue
     elif not id: 
