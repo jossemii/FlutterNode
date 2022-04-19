@@ -4,7 +4,7 @@ from threading import Thread
 from time import sleep
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2_grpc, api_pb2, celaut_pb2, buffer_pb2
 
-from main import FRONTIER, GATEWAY, RANDOM, REGRESION, SHA3_256, MOJITO, WALK, WALL
+from main import FRONTIER, GATEWAY, RANDOM, REGRESION, SHA3_256, MOJITO, WALK, WALL, WHISKY
 from grpcbigbuffer import Dir, client_grpc
 from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions_v1
 
@@ -38,7 +38,7 @@ def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
 
 
 g_stub = gateway_pb2_grpc.GatewayStub(
-    grpc.insecure_channel('192.168.1.143' + ':8090'),
+    grpc.insecure_channel(WHISKY + ':8090'),
 )
 
 def exec(id: int, solver_hash: str):
@@ -99,6 +99,7 @@ def exec(id: int, solver_hash: str):
                     partitions_message_mode_parser = True,
                     input = buffer_pb2.Empty()
                 ))
+                print('cnf -> ', cnf)
                 break
             except Exception as e: 
                 print('ERROR LAUNCHING CNF', str(e))

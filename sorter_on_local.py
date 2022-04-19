@@ -3,13 +3,13 @@ from gateway_pb2_grpcbf import StartService_input
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2
 from time import sleep, time
 
-from main import GATEWAY, MOJITO, RANDOM, FRONTIER, WALL, WALK, generator
+from main import GATEWAY, MOJITO, RANDOM, FRONTIER, WALL, WALK, WHISKY, generator
 from grpcbigbuffer import Dir, client_grpc
 
 
 
 g_stub = gateway_pb2_grpc.GatewayStub(
-    grpc.insecure_channel(MOJITO + ':8090'),
+    grpc.insecure_channel(WHISKY + ':8090'),
 )
 
 print('Get new services....')
