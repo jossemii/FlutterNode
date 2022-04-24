@@ -2,7 +2,7 @@ from buffer_pb2 import Buffer
 from gateway_pb2_grpcbf import Compile_output_partitions_v1, Compile_output_partitions_v2
 import grpcbigbuffer, gateway_pb2_grpc, grpc, gateway_pb2, sys, os
 
-from main import MOJITO
+from main import MOJITO, WHISKY
 
 
 def compile(partitions_model, partitions_message_mode_parser, repo):
