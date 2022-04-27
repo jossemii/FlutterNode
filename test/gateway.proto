@@ -1,0 +1,61 @@
+syntax = "proto3";
+package gateway;
+import "celaut.proto";
+import "buffer.proto";
+import "compile.proto";
+
+message TokenMessage {
+    string token = 1;
+}
+
+message CostMessage {
+    int32 cost = 1;
+}
+
+message Instance {
+    optional celaut.Any.Metadata instance_meta = 1;
+    celaut.Instance instance = 2;
+    optional string token = 3;
+}
+
+message ServiceWithMeta {
+    celaut.Any.Metadata metadata = 1;
+    celaut.Service service = 2;
+}
+
+// ( celaut.Any.Metadata.HashTag.Hash=H, ServiceWithMeta=S, celaut.Configuration=C; { H v S v H^C v S^C } )
+message HashWithConfig { // H^C 
+    celaut.Any.Metadata.HashTag.Hash hash = 1;
+    celaut.Configuration config = 3;
+    optional celaut.Sysparams min_sysreq = 4;  // init system specs.
+    optional celaut.Sysparams max_sysreq = 5;  // minimun system specs that the node needs to 've for it sometime.
+}
+message ServiceWithConfig { // S^C
+    ServiceWithMeta service = 2;
+    celaut.Configuration config = 3;
+    optional celaut.Sysparams min_sysreq = 4;  // init system specs.
+    optional celaut.Sysparams max_sysreq = 5;  // minimun system specs that the node needs to 've for it sometime.
+}
+
+message CompileInput {
+    bytes repo = 1;  // zip proyect file with .service on root directory.
+    repeated buffer.Buffer.Head.Partition partitions_model = 2;
+}
+
+message CompileOutput {
+    bytes id = 1;
+    compile.ServiceWithMeta service = 2;
+}
+
+// GRPC.
+
+service Gateway {
+    rpc StartService( stream buffer.Buffer) returns ( stream buffer.Buffer) {} // ( celaut.Any.Metadata.HashTag.Hash=H, celaut.Any=S, celaut.Configuration & celaut.Sysparams=C; { H v S v H^C v S^C } ) -> Instance
+    rpc StopService(stream buffer.Buffer) returns (stream buffer.Buffer) {} // TokenMessage -> Empty
+    rpc Hynode(stream buffer.Buffer) returns (stream buffer.Buffer) {} // Instance -> Instance
+    
+    rpc GetFile(stream buffer.Buffer) returns (stream buffer.Buffer) {} // celaut.Any.Metadata.HashTag.Hash -> celaut.Any
+    rpc Compile(stream buffer.Buffer) returns (stream buffer.Buffer) {} // CompileInput -> CompileOutput
+    rpc GetServiceTar(stream buffer.Buffer) returns (stream buffer.Buffer) {}// ( celaut.Any.Metadata.HashTag.Hash=H, celaut.Any=S; { H v S } ) -> buffer.Buffer (parse not needed.)
+    rpc GetServiceCost(stream buffer.Buffer) returns (stream buffer.Buffer) {} // ( celaut.Any.Metadata.HashTag.Hash=H, celaut.Any=S; { H v S } ) -> CostMessage
+}
