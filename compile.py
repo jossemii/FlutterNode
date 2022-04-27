@@ -8,7 +8,7 @@ from main import MOJITO, WHISKY
 def compile(partitions_model, partitions_message_mode_parser, repo):
     for b in grpcbigbuffer.client_grpc(
         method = gateway_pb2_grpc.GatewayStub(
-                    grpc.insecure_channel(MOJITO+':8090')
+                    grpc.insecure_channel(WHISKY+':8090')
                 ).Compile,
         input = gateway_pb2.CompileInput(
                     partitions_model = partitions_model,

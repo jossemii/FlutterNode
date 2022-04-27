@@ -1,22 +1,23 @@
+from random import randint
 from celaut_pb2 import Configuration
-import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2
+import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2, celaut_pb2
 from time import sleep, time
+from grpcbigbuffer import Dir
 
 
-SORTER = '6b1661cdd39ad382d814e2796fef0453a3018f517d48fba493da8326b649739e'
-RANDOM = 'b7b31b23f9c236b2bee3e27e48f8e592128e33e7c9519922db151c4d6c6d8ec3'
-FRONTIER = ''
-WALL = ''
-WALK = ''
+SORTER = '6d5623124bdc0c06a4347056adbf013a3ca512f9e7916dd7f1d1e0b62c172ef5'
+RANDOM = '05f6562f4a0a0e1ae92fa9b238fce2a978fbdc204a0d6a58989871b4f0fe95c3'
+FRONTIER = 'e56f7e2503319d8d6b8b4bb11fb7fbd2c0a892628878fea1faed32e202adf85f'
+WALL = '81694e37a0a4d9dc98dcf649ce5e9db1f9108e0b24cc16524561472f3bbdb6a8'
+WALK = 'ba54c6053ee21d7eb819331515aede8d5ce7e9c46c614e36abcc81a9cf73c6dc'
 LISIADO_UNDER = ''
 LISIADO_OVER = ''
 
 SHA3_256 = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a'
 
-WHISKY = '192.168.1.54'
-MOJITO = '192.168.1.144'
-TEQUILA = '192.168.1.63'
-GATEWAY = MOJITO
+WHISKY = '192.168.1.16'
+MOJITO = '192.168.1.20'
+GATEWAY = WHISKY
 
 def is_good(cnf, interpretation):
     def good_clause(clause, interpretation):
@@ -31,14 +32,23 @@ def is_good(cnf, interpretation):
             return False
     return True
 
-def generator(hash: str):
-    yield gateway_pb2.ServiceTransport(
-        hash = gateway_pb2.celaut__pb2.Any.Metadata.HashTag.Hash(
+def generator(hash: str, mem_limit: int = 50*pow(10, 6)):
+    yield gateway_pb2.HashWithConfig(
+        hash = celaut_pb2.Any.Metadata.HashTag.Hash(
             type = bytes.fromhex(SHA3_256),
             value = bytes.fromhex(hash)
         ),
-        config = gateway_pb2.celaut__pb2.Configuration()
+        config = celaut_pb2.Configuration(),
+        min_sysreq = celaut_pb2.Sysparams(
+            mem_limit = mem_limit
+        )
     )
+
+    # Send partition model.
+    yield ( 
+        gateway_pb2.ServiceWithMeta,
+        Dir('__registry__/'+hash)
+    ) 
 
 
 # Start the script.
@@ -73,7 +83,8 @@ if type(json.load(open('script_data.json', 'r'))) != dict:
 
     # Get random cnf
     random_cnf_service = g_stub.StartService(generator(
-        hash=RANDOM
+        hash=RANDOM,
+        mem_limit = 150*pow(10, 6)
     ))
     print(random_cnf_service)
     uri=random_cnf_service.instance.uri_slot[0].uri[0]
