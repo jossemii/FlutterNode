@@ -1,5 +1,5 @@
-script_data.json
-__pycache__/*
-__registry__/*
-dataset.bin
-.service.zip
+test/script_data.json
+test/__pycache__/*
+test/__registry__/*
+test/dataset.bin
+test/.service.zip
