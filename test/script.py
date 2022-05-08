@@ -5,7 +5,7 @@ from time import sleep, time
 from grpcbigbuffer import Dir, client_grpc
 
 
-SORTER = '6d5623124bdc0c06a4347056adbf013a3ca512f9e7916dd7f1d1e0b62c172ef5'
+SORTER = 'e2f54b4fcecacbe68e643fb86d020b070c7269335e311ae2142850c3dd6f885f'
 RANDOM = '05f6562f4a0a0e1ae92fa9b238fce2a978fbdc204a0d6a58989871b4f0fe95c3'
 FRONTIER = 'e56f7e2503319d8d6b8b4bb11fb7fbd2c0a892628878fea1faed32e202adf85f'
 WALL = '81694e37a0a4d9dc98dcf649ce5e9db1f9108e0b24cc16524561472f3bbdb6a8'
@@ -137,9 +137,11 @@ else:
         r_stub = api_pb2_grpc.RandomStub(
             grpc.insecure_channel(data['random'])
         )
-        frontier_stub = api_pb2_grpc.SolverStub(
-            grpc.insecure_channel(data['frontier'])
-        )
+        try:
+            frontier_stub = api_pb2_grpc.SolverStub(
+                grpc.insecure_channel(data['frontier'])
+            )
+        except: pass
 
 sleep(10) # Espera a que el servidor se levante.
 
@@ -162,7 +164,7 @@ if True: #input("\nGo to train? (y/n)")=='y':
 
     print('Subiendo solvers al clasificador.')
     # Añade solvers.
-    for s in  [FRONTIER, WALL, WALK]:
+    for s in  [FRONTIER, WALL]:
         print('     ', s)
         any = api_pb2.celaut__pb2.Any()
         any.ParseFromString(open('__registry__/'+s, 'rb').read())
@@ -178,7 +180,7 @@ if True: #input("\nGo to train? (y/n)")=='y':
 
 
     print('Wait to train the model ...')
-    for i in range(10): 
+    for i in range(50): 
         for j in range(5):
             print(' time ', i, j)
             sleep(200)
@@ -194,13 +196,15 @@ if True: #input("\nGo to train? (y/n)")=='y':
 
         print(' SOLVING CNF ...')
         t = time()
-        interpretation = next(client_grpc(
-            method = c_stub.Solve,
-            input = cnf,
-            partitions_serializer = api_pb2.Cnf,
-            partitions_message_mode_parser = True,
-            indices_parser = api_pb2.Interpretation
-        ))
+        try:
+            interpretation = next(client_grpc(
+                method = c_stub.Solve,
+                input = cnf,
+                partitions_serializer = api_pb2.Cnf,
+                partitions_message_mode_parser = True,
+                indices_parser = api_pb2.Interpretation
+            ))
+        except: pass
         print(str(time()-t)+' OKAY THE INTERPRETATION WAS ', interpretation, '.', is_good(interpretation))
 
         print(' SOLVING CNF ON DIRECT SOLVER ...')
