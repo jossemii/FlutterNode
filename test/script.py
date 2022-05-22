@@ -192,11 +192,11 @@ if True: #input("\nGo to train? (y/n)")=='y':
         t = time()
         try:
             interpretation = next(client_grpc(
-                method = c_stub.Solve,
-                input = cnf,
-                partitions_serializer = api_pb2.Cnf,
-                partitions_message_mode_parser = True,
-                indices_parser = api_pb2.Interpretation
+                method=c_stub.Solve,
+                indices_parser={1: api_pb2.Interpretation, 2: api_pb2.Empty},
+                partitions_message_mode_parser={1: True, 2: False},
+                input=cnf,
+                indices_serializer=api_pb2.Cnf
             ))
             print(str(time()-t)+' OKAY THE INTERPRETATION WAS ', interpretation, '.', is_good(interpretation))
         
@@ -231,7 +231,7 @@ if True: #input("\nGo to train? (y/n)")=='y':
                         partitions_message_mode_parser = True,
                         indices_parser = api_pb2.Interpretation
                     ))
-            print(str(time()-t)+' OKAY THE FRONTIER SAID ', interpretation, '.', is_good(interpretation))
+            print(str(time()-t)+' OKAY THE FRONTIER SAID ', interpretation, '.', is_good(interpretation = interpretation, cnf = cnf))
 
 
         except Exception as e: print('Solving cnf error -> ', str(e))
