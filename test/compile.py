@@ -2,13 +2,13 @@ from buffer_pb2 import Buffer
 from gateway_pb2_grpcbf import Compile_output_partitions_v1, Compile_output_partitions_v2
 import grpcbigbuffer, gateway_pb2_grpc, grpc, gateway_pb2, sys, os
 
-from main import MOJITO, WHISKY
+from main import MOJITO, WHISKY, TEQUILA
 
 
 def compile(partitions_model, partitions_message_mode_parser, repo):
     for b in grpcbigbuffer.client_grpc(
         method = gateway_pb2_grpc.GatewayStub(
-                    grpc.insecure_channel(WHISKY+':8090')
+                    grpc.insecure_channel(TEQUILA+':8090')
                 ).Compile,
         input = gateway_pb2.CompileInput(
                     partitions_model = partitions_model,

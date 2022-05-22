@@ -5,7 +5,7 @@ from time import sleep, time
 from grpcbigbuffer import Dir, client_grpc
 
 
-SORTER = 'e2f54b4fcecacbe68e643fb86d020b070c7269335e311ae2142850c3dd6f885f'
+SORTER = '418ff290e4efd4f06ea8e8acb1acafec68c486e16d0d376b140a40f999ef43e0'
 RANDOM = '05f6562f4a0a0e1ae92fa9b238fce2a978fbdc204a0d6a58989871b4f0fe95c3'
 FRONTIER = 'e56f7e2503319d8d6b8b4bb11fb7fbd2c0a892628878fea1faed32e202adf85f'
 WALL = '81694e37a0a4d9dc98dcf649ce5e9db1f9108e0b24cc16524561472f3bbdb6a8'
@@ -17,7 +17,8 @@ SHA3_256 = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a'
 
 WHISKY = '192.168.1.16'
 MOJITO = '192.168.1.20'
-GATEWAY = WHISKY
+TEQUILA = '192.168.1.28'
+GATEWAY = TEQUILA
 
 def is_good(cnf, interpretation):
     def good_clause(clause, interpretation):
@@ -204,33 +205,11 @@ if True: #input("\nGo to train? (y/n)")=='y':
                 partitions_message_mode_parser = True,
                 indices_parser = api_pb2.Interpretation
             ))
-        except: pass
-        print(str(time()-t)+' OKAY THE INTERPRETATION WAS ', interpretation, '.', is_good(interpretation))
-
-        print(' SOLVING CNF ON DIRECT SOLVER ...')
-        t = time()
-        try:
-            interpretation = next(client_grpc(
-                method = frontier_stub.Solve,
-                input = cnf,
-                indices_serializer = api_pb2.Cnf,
-                partitions_message_mode_parser = True,
-                indices_parser = api_pb2.Interpretation
-            ))
-        except(grpc.RpcError):
-                # Get the frontier for test it.
-                uri=next(client_grpc(
-                        method = g_stub.StartService,
-                        input = generator(hash = FRONTIER),
-                        indices_parser = gateway_pb2.Instance,
-                        partitions_message_mode_parser = True,
-                        indices_serializer = StartService_input,
-                        partitions_serializer = StartService_input_partitions_v1  # There it's not used.
-                    )).instance.uri_slot[0].uri[0]
-                frontier_uri = uri.ip +':'+ str(uri.port)
-                frontier_stub = api_pb2_grpc.SolverStub(
-                    grpc.insecure_channel(frontier_uri)
-                    )
+            print(str(time()-t)+' OKAY THE INTERPRETATION WAS ', interpretation, '.', is_good(interpretation))
+        
+            print(' SOLVING CNF ON DIRECT SOLVER ...')
+            t = time()
+            try:
                 interpretation = next(client_grpc(
                     method = frontier_stub.Solve,
                     input = cnf,
@@ -238,7 +217,31 @@ if True: #input("\nGo to train? (y/n)")=='y':
                     partitions_message_mode_parser = True,
                     indices_parser = api_pb2.Interpretation
                 ))
-        print(str(time()-t)+' OKAY THE FRONTIER SAID ', interpretation, '.', is_good(interpretation))
+            except(grpc.RpcError):
+                    # Get the frontier for test it.
+                    uri=next(client_grpc(
+                            method = g_stub.StartService,
+                            input = generator(hash = FRONTIER),
+                            indices_parser = gateway_pb2.Instance,
+                            partitions_message_mode_parser = True,
+                            indices_serializer = StartService_input,
+                            partitions_serializer = StartService_input_partitions_v1  # There it's not used.
+                        )).instance.uri_slot[0].uri[0]
+                    frontier_uri = uri.ip +':'+ str(uri.port)
+                    frontier_stub = api_pb2_grpc.SolverStub(
+                        grpc.insecure_channel(frontier_uri)
+                        )
+                    interpretation = next(client_grpc(
+                        method = frontier_stub.Solve,
+                        input = cnf,
+                        indices_serializer = api_pb2.Cnf,
+                        partitions_message_mode_parser = True,
+                        indices_parser = api_pb2.Interpretation
+                    ))
+            print(str(time()-t)+' OKAY THE FRONTIER SAID ', interpretation, '.', is_good(interpretation))
+
+
+        except Exception as e: print('Solving cnf error -> ', str(e))
 
         print('Obtiene el data_set.')
 
