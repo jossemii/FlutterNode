@@ -9,7 +9,7 @@ SORTER = '418ff290e4efd4f06ea8e8acb1acafec68c486e16d0d376b140a40f999ef43e0'
 RANDOM = '05f6562f4a0a0e1ae92fa9b238fce2a978fbdc204a0d6a58989871b4f0fe95c3'
 FRONTIER = 'e56f7e2503319d8d6b8b4bb11fb7fbd2c0a892628878fea1faed32e202adf85f'
 WALL = '81694e37a0a4d9dc98dcf649ce5e9db1f9108e0b24cc16524561472f3bbdb6a8'
-WALK = 'ba54c6053ee21d7eb819331515aede8d5ce7e9c46c614e36abcc81a9cf73c6dc'
+WALK = ''
 LISIADO_UNDER = ''
 LISIADO_OVER = ''
 
@@ -146,6 +146,15 @@ else:
 
 sleep(10) # Espera a que el servidor se levante.
 
+print('Subiendo solvers al clasificador.')
+# Añade solvers.
+for s in [FRONTIER, WALL]:
+    print('     ', s)
+    next(client_grpc(
+        method = c_stub.UploadSolver,
+        input = (gateway_pb2.ServiceWithMeta, Dir('__registry__/'+s))
+    ))
+
 try:
     dataset = solvers_dataset_pb2.DataSet()
     dataset.ParseFromString(open('dataset.bin', 'rb').read())
@@ -162,22 +171,6 @@ if True: #input("\nGo to train? (y/n)")=='y':
     print('Iniciando entrenamiento...')
     # Inicia el entrenamiento.
     next(client_grpc(method=c_stub.StartTrain))
-
-    print('Subiendo solvers al clasificador.')
-    # Añade solvers.
-    for s in  [FRONTIER, WALL]:
-        print('     ', s)
-        any = api_pb2.celaut__pb2.Any()
-        any.ParseFromString(open('__registry__/'+s, 'rb').read())
-        service = api_pb2.celaut__pb2.Service()
-        service.ParseFromString(any.value)
-        next(client_grpc(
-            method=c_stub.UploadSolver,
-            input = api_pb2.ServiceWithMeta(
-                    meta = any.metadata,
-                    service = service
-                )
-        ))
 
 
     print('Wait to train the model ...')
