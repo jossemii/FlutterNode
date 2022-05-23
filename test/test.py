@@ -38,7 +38,7 @@ def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
 
 
 g_stub = gateway_pb2_grpc.GatewayStub(
-    grpc.insecure_channel(WHISKY + ':8090'),
+    grpc.insecure_channel(MOJITO + ':8090'),
 )
 
 def exec(id: int, solver_hash: str):
