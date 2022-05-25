@@ -4,7 +4,6 @@ __version__ = 'dev'
 CHUNK_SIZE = 1024 * 1024  # 1MB
 MAX_DIR = 999999999
 import os, gc, itertools, sys
-from re import sub
 
 from google import protobuf
 import buffer_pb2
@@ -120,7 +119,7 @@ def get_subclass(partition, object_cls):
         partition = list(partition.index.values())[0]
         ) if len(partition.index) == 1 else object_cls
 
-def copy_message(obj, field_name, message):
+def copy_message(obj, field_name, message):  # TODO for list too.
     e = getattr(obj, field_name) if field_name else obj
     if hasattr(message, 'CopyFrom'):
         e.CopyFrom(message)
@@ -134,6 +133,9 @@ def get_submessage(partition, obj, say_if_not_change = False):
     if len(partition.index) == 0:
         return False if say_if_not_change else obj
     if len(partition.index) == 1:
+        for field in obj.DESCRIPTOR.fields:
+            if field.index+1 not in partition.index:
+                obj.ClearField(field.name)
         return get_submessage(
             partition = list(partition.index.values())[0],
             obj = getattr(obj, obj.DESCRIPTOR.fields[list(partition.index.keys())[0]-1].name)
