@@ -3,21 +3,19 @@ from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2, celaut_pb2
 from time import sleep, time
 from grpcbigbuffer import Dir, client_grpc
+from main import TEQUILA
 
 
-SORTER = '418ff290e4efd4f06ea8e8acb1acafec68c486e16d0d376b140a40f999ef43e0'
+SORTER = 'ac65f2fa182906a207f56ee15d1d4a0cea5272ba214b29d0e28b412d2c2663f3'
 RANDOM = '05f6562f4a0a0e1ae92fa9b238fce2a978fbdc204a0d6a58989871b4f0fe95c3'
-FRONTIER = 'e56f7e2503319d8d6b8b4bb11fb7fbd2c0a892628878fea1faed32e202adf85f'
-WALL = '81694e37a0a4d9dc98dcf649ce5e9db1f9108e0b24cc16524561472f3bbdb6a8'
+FRONTIER = '30b7e3571d9dccc80c96ffb73b5c44b42a3e68ee244a0d8ee2a0c4401d8856ab'
+WALL = ''
 WALK = ''
 LISIADO_UNDER = ''
 LISIADO_OVER = ''
 
 SHA3_256 = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a'
 
-WHISKY = '192.168.1.16'
-MOJITO = '192.168.1.20'
-TEQUILA = '192.168.1.28'
 GATEWAY = TEQUILA
 
 def is_good(cnf, interpretation):
@@ -84,7 +82,7 @@ if type(json.load(open('script_data.json', 'r'))) != dict:
         grpc.insecure_channel(c_uri)
         )
     print('Tenemos clasificador. ', c_stub)
-
+    exit()
     # Get random cnf
     random_cnf_service = next(client_grpc(
         method = g_stub.StartService,
@@ -148,7 +146,7 @@ sleep(10) # Espera a que el servidor se levante.
 
 print('Subiendo solvers al clasificador.')
 # Añade solvers.
-for s in [FRONTIER, WALL]:
+for s in [FRONTIER]:
     print('     ', s)
     next(client_grpc(
         method = c_stub.UploadSolver,
