@@ -4,7 +4,7 @@ from threading import Thread
 from time import sleep
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2_grpc, api_pb2, celaut_pb2, buffer_pb2
 
-from main import FRONTIER, GATEWAY, RANDOM, REGRESION, SHA3_256, MOJITO, WALK, WALL, WHISKY, FRONTIER_X86
+from main import FRONTIER, GATEWAY, RANDOM, REGRESION, SHA3_256, MOJITO, WALK, WALL, WHISKY
 from grpcbigbuffer import Dir, client_grpc
 from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions_v1
 
@@ -142,7 +142,7 @@ thread_list = []
 for i in range(int(sys.argv[1])):
     t = Thread(
         target = exec,
-        args=(i, choice([FRONTIER_X86]))
+        args=(i, choice([FRONTIER]))
     )
     t.start()
     thread_list.append(t)
