@@ -3,12 +3,12 @@ from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2, celaut_pb2
 from time import sleep, time
 from grpcbigbuffer import Dir, client_grpc
-from main import TEQUILA
+from main import TEQUILA, WHISKY
 
 
-SORTER = 'ac65f2fa182906a207f56ee15d1d4a0cea5272ba214b29d0e28b412d2c2663f3'
+SORTER = 'd3cef64f69cf4151e0cc6a20f2718ed5d96cc4e4880870b5920dede13107e9c3'
 RANDOM = '05f6562f4a0a0e1ae92fa9b238fce2a978fbdc204a0d6a58989871b4f0fe95c3'
-FRONTIER = '30b7e3571d9dccc80c96ffb73b5c44b42a3e68ee244a0d8ee2a0c4401d8856ab'
+FRONTIER = 'fc3576f647f64f0759cb32d1b9e258f77c3bccf5355d8f2698dd8d8682a072af'
 WALL = ''
 WALK = ''
 LISIADO_UNDER = ''
@@ -82,7 +82,7 @@ if type(json.load(open('script_data.json', 'r'))) != dict:
         grpc.insecure_channel(c_uri)
         )
     print('Tenemos clasificador. ', c_stub)
-    exit()
+
     # Get random cnf
     random_cnf_service = next(client_grpc(
         method = g_stub.StartService,
