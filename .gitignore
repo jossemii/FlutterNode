@@ -3,3 +3,4 @@ test/__pycache__/*
 test/__registry__/*
 test/dataset.bin
 test/.service.zip
+test/__cache__/*
