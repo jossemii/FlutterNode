@@ -3,16 +3,7 @@ from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2, celaut_pb2
 from time import sleep, time
 from grpcbigbuffer import Dir, client_grpc
-from main import TEQUILA, WHISKY
-
-
-SORTER = 'd3cef64f69cf4151e0cc6a20f2718ed5d96cc4e4880870b5920dede13107e9c3'
-RANDOM = '05f6562f4a0a0e1ae92fa9b238fce2a978fbdc204a0d6a58989871b4f0fe95c3'
-FRONTIER = 'fc3576f647f64f0759cb32d1b9e258f77c3bccf5355d8f2698dd8d8682a072af'
-WALL = ''
-WALK = ''
-LISIADO_UNDER = ''
-LISIADO_OVER = ''
+from main import TEQUILA, WHISKY, RANDOM, SORTER, FRONTIER, WALL, WALK
 
 SHA3_256 = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a'
 
