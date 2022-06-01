@@ -223,7 +223,7 @@ if True: #input("\nGo to train? (y/n)")=='y':
             print(str(time()-t)+' OKAY THE FRONTIER SAID ', interpretation, '.', is_good(interpretation = interpretation, cnf = cnf))
 
 
-        except Exception as e: print('Solving cnf error -> ', str(e))
+        except Exception as e: print('Solving cnf error -> ', str(e), ' no debe de tener listo el tensor.')
 
         print('Obtiene el data_set.')
 
