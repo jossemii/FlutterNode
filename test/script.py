@@ -1,3 +1,4 @@
+from ast import walk
 import shutil
 from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions_v1
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2, celaut_pb2
@@ -137,7 +138,7 @@ sleep(10) # Espera a que el servidor se levante.
 
 print('Subiendo solvers al clasificador.')
 # Añade solvers.
-for s in [FRONTIER]:
+for s in [FRONTIER, WALL, WALK]:
     print('     ', s)
     next(client_grpc(
         method = c_stub.UploadSolver,
