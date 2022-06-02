@@ -11,9 +11,9 @@ LISIADO_OVER = ''
 
 SHA3_256 = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a'
 
-WHISKY = '192.168.43.180'
+WHISKY = '192.168.1.16'
 MOJITO = '192.168.1.20'
-TEQUILA = '192.168.43.35'
+TEQUILA = '192.168.1.28'
 GATEWAY = 'localhost'
 
 import celaut_pb2, gateway_pb2
