@@ -1,4 +1,3 @@
-from ast import walk
 import shutil
 from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions_v1
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2, celaut_pb2
