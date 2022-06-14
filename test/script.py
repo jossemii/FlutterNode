@@ -3,11 +3,11 @@ from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions
 import grpc, gateway_pb2, gateway_pb2_grpc, api_pb2, api_pb2_grpc, threading, json, solvers_dataset_pb2, celaut_pb2
 from time import sleep, time
 from grpcbigbuffer import Dir, client_grpc
-from main import TEQUILA, WHISKY, RANDOM, SORTER, FRONTIER, WALL, WALK
+from main import TEQUILA, WHISKY, RANDOM, SORTER, FRONTIER, WALL, WALK, GATEWAY
 
 SHA3_256 = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a'
 
-GATEWAY = TEQUILA
+LIST_OF_SOLVERS = [FRONTIER]
 
 def is_good(cnf, interpretation):
     def good_clause(clause, interpretation):
@@ -23,16 +23,18 @@ def is_good(cnf, interpretation):
     return True
 
 def generator(hash: str, mem_limit: int = 50*pow(10, 6)):
-    yield gateway_pb2.HashWithConfig(
-        hash = celaut_pb2.Any.Metadata.HashTag.Hash(
-            type = bytes.fromhex(SHA3_256),
-            value = bytes.fromhex(hash)
-        ),
-        config = celaut_pb2.Configuration(),
-        min_sysreq = celaut_pb2.Sysparams(
-            mem_limit = mem_limit
+    try:
+        yield gateway_pb2.HashWithConfig(
+            hash = celaut_pb2.Any.Metadata.HashTag.Hash(
+                type = bytes.fromhex(SHA3_256),
+                value = bytes.fromhex(hash)
+            ),
+            config = celaut_pb2.Configuration(),
+            min_sysreq = celaut_pb2.Sysresources(
+                mem_limit = mem_limit
+            )
         )
-    )
+    except Exception as e: print(e)
 
     # Send partition model.
     yield ( 
@@ -60,7 +62,7 @@ if type(json.load(open('script_data.json', 'r'))) != dict:
     # Get a classifier.
     classifier = next(client_grpc(
         method = g_stub.StartService,
-        input = generator(hash = SORTER, mem_limit= 150*pow(10, 6)),
+        input = generator(hash = SORTER, mem_limit= 4150*pow(10, 6)),
         indices_parser = gateway_pb2.Instance,
         partitions_message_mode_parser = True,
         indices_serializer = StartService_input,
@@ -137,7 +139,7 @@ sleep(10) # Espera a que el servidor se levante.
 
 print('Subiendo solvers al clasificador.')
 # Añade solvers.
-for s in [FRONTIER, WALL, WALK]:
+for s in LIST_OF_SOLVERS:
     print('     ', s)
     next(client_grpc(
         method = c_stub.UploadSolver,
