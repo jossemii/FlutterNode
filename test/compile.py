@@ -29,7 +29,6 @@ for b in compile(
     print('b -> ', b)
     if b is gateway_pb2.CompileOutput: continue
     elif not id: 
-        print('id -> ', id)
         id = b.hex()
         os.mkdir('__registry__/'+id)
     elif id: os.system('mv '+b+' '+'__registry__/'+id+'/')

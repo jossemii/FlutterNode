@@ -6,7 +6,7 @@ MAX_DIR = 999999999
 import os, gc, itertools, sys
 
 from google import protobuf
-import buffer_pb2
+import src.buffer_pb2 as buffer_pb2
 from random import randint
 from typing import Generator, Union, final
 from threading import Condition
@@ -394,7 +394,6 @@ def parse_from_buffer(
 
 
     for buffer in request_iterator:
-        print('buffer -> ', buffer)
         # The order of conditions is important.
         if buffer.HasField('head'):
             if buffer.head.index not in indices: raise Exception('Parse from buffer error: buffer head index is not correct ' + str(buffer.head.index) + str(indices.keys()))
