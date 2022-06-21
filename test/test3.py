@@ -4,7 +4,7 @@ import gateway_pb2_grpcbf, celaut_pb2, gateway_pb2, gateway_pb2_grpc
 import grpc
 import grpcbigbuffer
 from grpcbigbuffer import Dir, client_grpc
-from main import SHA3_256
+from main import MOJITO, SHA3_256
 
 def service_extended():
 
@@ -15,7 +15,7 @@ def service_extended():
     )    
 
 g_stub = gateway_pb2_grpc.GatewayStub(
-    grpc.insecure_channel('192.168.1.143:8090'),
+    grpc.insecure_channel(MOJITO+':8090'),
 )
 
 random = next(client_grpc(

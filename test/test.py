@@ -8,23 +8,29 @@ from main import FRONTIER, GATEWAY, RANDOM, REGRESION, SHA3_256, MOJITO, WALK, W
 from grpcbigbuffer import Dir, client_grpc
 from gateway_pb2_grpcbf import StartService_input, StartService_input_partitions_v1
 
-def service_extended(hash):
-    yield gateway_pb2.HashWithConfig(
-        hash = celaut_pb2.Any.Metadata.HashTag.Hash(
-            type = bytes.fromhex(SHA3_256),
-            value = bytes.fromhex(hash)
-        ),
-        config = celaut_pb2.Configuration(),
-        min_sysreq = celaut_pb2.Sysparams(
-            mem_limit = randint(40, 160)*pow(10, 6)
+
+def generator(hash: str, mem_limit: int = 50*pow(10, 6)):
+    try:
+        yield gateway_pb2.HashWithConfig(
+            hash = celaut_pb2.Any.Metadata.HashTag.Hash(
+                type = bytes.fromhex(SHA3_256),
+                value = bytes.fromhex(hash)
+            ),
+            config = celaut_pb2.Configuration(),
+            min_sysreq = celaut_pb2.Sysresources(
+                mem_limit = mem_limit
+            )
         )
-    )
+    except Exception as e: print(e)
 
     # Send partition model.
     yield ( 
         gateway_pb2.ServiceWithMeta,
         Dir('__registry__/'+hash)
-    )    
+    ) 
+    
+def service_extended(hash):
+    for t in generator(hash=hash): yield t  
 
 
 def get_grpc_uri(instance: celaut_pb2.Instance) -> celaut_pb2.Instance.Uri:
