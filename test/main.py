@@ -14,8 +14,8 @@ WHISKY = '192.168.1.16'
 MOJITO = '192.168.1.21'
 TEQUILA = '192.168.1.17'
 LOCALHOST = 'localhost'
-CODESPACE = 'jossemii-hypernode-xqvwggjxhr5w-8090.githubpreview.dev'
-GATEWAY = CODESPACE
+CODESPACE = 'jossemii-hypernode-xqvwggjxhr5w-8090.githubpreview.dev:443'
+GATEWAY = TEQUILA
 
 import celaut_pb2, gateway_pb2
 from grpcbigbuffer import Dir
