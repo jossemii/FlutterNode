@@ -54,6 +54,8 @@ g_stub = gateway_pb2_grpc.GatewayStub(
     grpc.insecure_channel(GATEWAY+':8090')
     )
 
+sleep(5)
+
 print(json.load(open('script_data.json', 'r')))
 if type(json.load(open('script_data.json', 'r'))) != dict:
 
