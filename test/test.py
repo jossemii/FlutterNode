@@ -145,7 +145,9 @@ def exec(id: int, solver_hash: str):
     print('Stopped ', id)
 
 thread_list = []
-for i in range(int(sys.argv[1])):
+ri: int = int(sys.argv[1])
+for i in range(ri):
+    sleep(randint(ri))
     t = Thread(
         target = exec,
         args=(i, choice([FRONTIER]))
