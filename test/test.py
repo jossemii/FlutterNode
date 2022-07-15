@@ -96,7 +96,7 @@ def exec(id: int, solver_hash: str):
     print('\nwait.',id,' ..')
     sleep(10)
     print('\n\nTest it  ',id,' on ', solver_uri)
-    for i in range(1):
+    for i in range(100):
         while True:
             try:
                 cnf = next(client_grpc(
@@ -108,7 +108,7 @@ def exec(id: int, solver_hash: str):
                 print('cnf -> ', cnf)
                 break
             except Exception as e: 
-                print('ERROR LAUNCHING CNF', str(e))
+                print('ERROR LAUNCHING CNF')
                 sleep(2)
 
         while True:
@@ -122,7 +122,7 @@ def exec(id: int, solver_hash: str):
                 ))
                 break
             except Exception as e: 
-                print('ERROR LAUNCHING SOLVER', str(e))
+                print('ERROR LAUNCHING SOLVER')
                 sleep(2)
 
         print('Interpretation  ',id,' -- ',i,' -> ', interpretation)

@@ -12,7 +12,7 @@ SHA3_256 = 'a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a'
 
 WHISKY = '192.168.1.16'
 MOJITO = '192.168.1.21'
-TEQUILA = '192.168.1.17'
+TEQUILA = '192.168.1.65'
 LOCALHOST = 'localhost'
 CODESPACE = 'jossemii-hypernode-xqvwggjxhr5w-8090.githubpreview.dev:443'
 GATEWAY = TEQUILA
