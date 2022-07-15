@@ -94,7 +94,7 @@ def exec(id: int, solver_hash: str):
     print(' SOLVER SERVICE ',id,' -> ', solver_uri)
 
     print('\nwait.',id,' ..')
-    sleep(10)
+    sleep(20)
     print('\n\nTest it  ',id,' on ', solver_uri)
     for i in range(100):
         while True:
@@ -109,7 +109,7 @@ def exec(id: int, solver_hash: str):
                 break
             except Exception as e: 
                 print('ERROR LAUNCHING CNF')
-                sleep(2)
+                sleep(10)
 
         while True:
             try:
@@ -147,7 +147,7 @@ def exec(id: int, solver_hash: str):
 thread_list = []
 ri: int = int(sys.argv[1])
 for i in range(ri):
-    sleep(randint(ri))
+    sleep(randint(0, ri))
     t = Thread(
         target = exec,
         args=(i, choice([FRONTIER]))
