@@ -96,8 +96,8 @@ def exec(id: int, solver_hash: str):
     print('\nwait.',id,' ..')
     sleep(20)
     print('\n\nTest it  ',id,' on ', solver_uri)
-    for i in range(100):
-        while True:
+    while True:
+        for i in range(20):
             try:
                 cnf = next(client_grpc(
                     method = random_stub.RandomCnf,
@@ -111,7 +111,7 @@ def exec(id: int, solver_hash: str):
                 print('ERROR LAUNCHING CNF')
                 sleep(10)
 
-        while True:
+        for i in range(20):
             try:
                 interpretation  = next(client_grpc(
                     method=solver_stub.Solve,
@@ -146,11 +146,11 @@ def exec(id: int, solver_hash: str):
 
 thread_list = []
 ri: int = int(sys.argv[1])
-for i in range(ri):
+while True:
     sleep(randint(0, ri))
     t = Thread(
         target = exec,
-        args=(i, choice([FRONTIER]))
+        args=(ri, choice([FRONTIER]))
     )
     t.start()
     thread_list.append(t)
