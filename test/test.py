@@ -128,7 +128,7 @@ def exec(id: int, solver_hash: str):
                 if i>=4: end = True
                 sleep(2)
 
-        print('Interpretation  ',id,' -- ',i,' -> ', interpretation)
+        if interpretation: print('Interpretation  ',id,' -- ',i,' -> ', interpretation)
     sleep(30)
     print('Go to stop that  ',id,' .', random_token, solver_token)
     next(client_grpc(
