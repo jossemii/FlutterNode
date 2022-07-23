@@ -4,19 +4,32 @@ import "celaut.proto";
 import "buffer.proto";
 import "compile.proto";
 
+message GasAmount {
+    uint64 gas_amount = 1;
+    int32 exponent = 2;
+}
+
 message TokenMessage {
     string token = 1;
 }
 
 message EstimatedCost {
-    int32 cost = 1;
+    GasAmount cost = 1;
     float variance = 2;
 }
 
+message Refund {
+    GasAmount amount = 1;
+}
+
 message Payment {
-    int32 amount = 1;
-    string tx_id = 2;
-    string ledger = 3;
+    string deposit_token = 1;
+    celaut.Service.Api.ContractLedger contract_ledger = 3;
+    GasAmount gas_amount = 4;
+}
+
+message Metrics {
+    GasAmount gas_amount = 1;
 }
 
 message Instance {
@@ -36,14 +49,14 @@ message HashWithConfig { // H^C
     celaut.Configuration config = 3;
     optional celaut.Sysresources min_sysreq = 4;  // init system specs.
     optional celaut.Sysresources max_sysreq = 5;  // minimun system specs that the node needs to 've for it sometime.
-    optional int64 initial_gas_amount = 6;
+    optional GasAmount initial_gas_amount = 6;
 }
 message ServiceWithConfig { // S^C
     ServiceWithMeta service = 2;
     celaut.Configuration config = 3;
     optional celaut.Sysresources min_sysreq = 4;  // init system specs.
     optional celaut.Sysresources max_sysreq = 5;  // minimun system specs that the node needs to 've for it sometime.
-    optional int64 initial_gas_amount = 6;
+    optional GasAmount initial_gas_amount = 6;
 }
 
 message CompileInput {
@@ -65,7 +78,7 @@ message ModifyServiceSystemResourcesInput {
 
 service Gateway {
     rpc StartService( stream buffer.Buffer) returns ( stream buffer.Buffer) {} // ( celaut.Any.Metadata.HashTag.Hash=H, celaut.Any=S, celaut.Configuration & celaut.Sysresources=C; { H v S v H^C v S^C } ) -> Instance
-    rpc StopService(stream buffer.Buffer) returns (stream buffer.Buffer) {} // TokenMessage -> Empty
+    rpc StopService(stream buffer.Buffer) returns (stream buffer.Buffer) {} // TokenMessage -> Refund
     rpc Hynode(stream buffer.Buffer) returns (stream buffer.Buffer) {} // Instance -> Instance
     
     rpc ModifyServiceSystemResources(stream buffer.Buffer) returns (stream buffer.Buffer) {} // ModifyServiceSystemResourcesInput -> celaut.Sysresources
@@ -73,6 +86,8 @@ service Gateway {
     rpc GetFile(stream buffer.Buffer) returns (stream buffer.Buffer) {} // celaut.Any.Metadata.HashTag.Hash -> celaut.Any
     rpc Compile(stream buffer.Buffer) returns (stream buffer.Buffer) {} // CompileInput -> CompileOutput
     rpc GetServiceTar(stream buffer.Buffer) returns (stream buffer.Buffer) {}// ( celaut.Any.Metadata.HashTag.Hash=H, celaut.Any=S; { H v S } ) -> buffer.Buffer (parse not needed.)
+    
     rpc GetServiceEstimatedCost(stream buffer.Buffer) returns (stream buffer.Buffer) {} // ( celaut.Any.Metadata.HashTag.Hash=H, celaut.Any=S; { H v S } ) -> EstimatedCost
     rpc Payable(stream buffer.Buffer) returns (stream buffer.Buffer) {} // Payment -> Empty
+    rpc GetMetrics(stream buffer.Buffer) returns (stream buffer.Buffer) {} // TokenMessage -> Metrics
 }
