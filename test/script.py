@@ -143,11 +143,16 @@ print('Subiendo solvers al clasificador.')
 # Añade solvers.
 for s in LIST_OF_SOLVERS:
     print('     ', s)
-    next(client_grpc(
-        method = c_stub.UploadSolver,
-        input = (gateway_pb2.ServiceWithMeta, Dir('__registry__/'+s))
-    ))
-
+    while True:
+        try:
+            next(client_grpc(
+                method = c_stub.UploadSolver,
+                input = (gateway_pb2.ServiceWithMeta, Dir('__registry__/'+s))
+            ))
+            break
+        except Exception as e: 
+            print('Error al conectar con el clasificador ', e)
+            sleep(1)
 try:
     dataset = solvers_dataset_pb2.DataSet()
     dataset.ParseFromString(open('dataset.bin', 'rb').read())
