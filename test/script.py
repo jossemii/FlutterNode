@@ -22,7 +22,7 @@ def is_good(cnf, interpretation):
             return False
     return True
 
-def generator(hash: str, mem_limit: int = 50*pow(10, 6)):
+def generator(hash: str, mem_limit: int = 50*pow(10, 6), initial_gas_amount: int = None):
     try:
         yield gateway_pb2.HashWithConfig(
             hash = celaut_pb2.Any.Metadata.HashTag.Hash(
@@ -32,7 +32,8 @@ def generator(hash: str, mem_limit: int = 50*pow(10, 6)):
             config = celaut_pb2.Configuration(),
             min_sysreq = celaut_pb2.Sysresources(
                 mem_limit = mem_limit
-            )
+            ),
+            initial_gas_amount = initial_gas_amount
         )
     except Exception as e: print(e)
 
@@ -64,7 +65,11 @@ if type(json.load(open('script_data.json', 'r'))) != dict:
     # Get a classifier.
     classifier = next(client_grpc(
         method = g_stub.StartService,
-        input = generator(hash = SORTER, mem_limit= 4150*pow(10, 6)),
+        input = generator(
+            hash = SORTER, 
+            mem_limit= 4150*pow(10, 6),
+            initial_gas_amount = pow(10, 64)
+        ),
         indices_parser = gateway_pb2.Instance,
         partitions_message_mode_parser = True,
         indices_serializer = StartService_input,
